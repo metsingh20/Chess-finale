@@ -1,0 +1,11 @@
+# robots.txt for chesslinespractice.com
+# Allow all crawlers to index all pages
+
+User-agent: *
+Allow: /
+
+# Block crawlers from auth-only pages that don't need indexing
+Disallow: /reset-password
+
+# Sitemap location
+Sitemap: https://www.chesslinespractice.com/sitemap.xml
