@@ -255,16 +255,6 @@ export default function ControlsPanel({
           </div>
         </div>
 
-        {/* Message */}
-        {message && (
-          <div className={`p-3 rounded-lg text-center font-semibold text-xs font-body transition-all duration-300 ${
-            message.type === 'success'
-              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-              : 'bg-red-500/20 text-red-400 border border-red-500/30'
-          }`}>
-            {message.text}
-          </div>
-        )}
       </div>
     </>
   );

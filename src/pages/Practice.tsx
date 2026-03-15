@@ -66,6 +66,8 @@ const Practice = () => {
   // Sidebar state
   const [sidebarView, setSidebarView] = useState<SidebarView>('menu');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(true);
+  const [menuExpanded, setMenuExpanded] = useState(false);
+  const [menuReady, setMenuReady] = useState(false);
   const [allGames, setAllGames] = useState<GameData[]>([]);
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
 
@@ -473,43 +475,105 @@ const Practice = () => {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -100, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="group"
               style={{ pointerEvents: 'auto' }}
             >
-              <div className="bg-card border border-border rounded-r-xl shadow-elevated overflow-visible w-14 hover:w-[250px] transition-all duration-400 cursor-pointer">
-                <div className="gradient-gold py-4 px-2 text-center text-primary-foreground font-bold pointer-events-auto flex flex-col items-center justify-center gap-1">
-                  <Menu className="w-6 h-6" />
-                  <span className="text-[10px] font-semibold tracking-wide leading-none">MENU</span>
-                </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200 p-3 space-y-2 pointer-events-auto">
-                  <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide px-1 pb-1 font-body">Practice</p>
-                  <button
-                    onClick={() => { setSidebarView('lines'); setMobileSidebarOpen(true); }}
-                    className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left hover:bg-surface-elevated transition-all duration-300 font-body flex items-center gap-2"
+
+              {/* ── MOBILE: tap-to-open, buttons only mount in DOM after open ── */}
+              <div className="block sm:hidden">
+                <div className={`bg-card border border-border rounded-r-xl shadow-elevated transition-all duration-300 ${menuExpanded ? 'w-[250px]' : 'w-14'}`}>
+                  <div
+                    className="gradient-gold py-4 px-2 text-center text-primary-foreground font-bold flex flex-col items-center justify-center gap-1"
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!menuExpanded) {
+                        setMenuExpanded(true);
+                        setMenuReady(false);
+                        setTimeout(() => setMenuReady(true), 500);
+                      } else {
+                        setMenuExpanded(false);
+                        setMenuReady(false);
+                      }
+                    }}
                   >
-                    <Target className="w-4 h-4 shrink-0" /> Your Lines
-                  </button>
-                  <button
-                    onClick={() => { setSidebarView('openings'); setMobileSidebarOpen(true); }}
-                    className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left hover:bg-surface-elevated transition-all duration-300 font-body flex items-center gap-2"
-                  >
-                    <span className="shrink-0">♟️</span> Openings
-                  </button>
-                  <div className="border-t border-border my-1" />
-                  <button
-                    onClick={() => navigate('/analysis')}
-                    className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left hover:bg-surface-elevated transition-all duration-300 font-body flex items-center gap-2"
-                  >
-                    <BarChart2 className="w-4 h-4 shrink-0" /> Analysis
-                  </button>
-                  <button
-                    onClick={() => navigate('/stats')}
-                    className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left hover:bg-surface-elevated transition-all duration-300 font-body flex items-center gap-2"
-                  >
-                    <TrendingUp className="w-4 h-4 shrink-0" /> Stats
-                  </button>
+                    <Menu className="w-6 h-6" />
+                    <span className="text-[10px] font-semibold tracking-wide leading-none">MENU</span>
+                  </div>
+                  {/* Only rendered in DOM once open — can't accidentally touch invisible buttons */}
+                  {menuExpanded && (
+                    <div
+                      className="p-3 space-y-2"
+                      style={{ pointerEvents: menuReady ? 'auto' : 'none', opacity: menuReady ? 1 : 0.4, transition: 'opacity 0.2s' }}
+                    >
+                      <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide px-1 pb-1 font-body">Practice</p>
+                      <button
+                        onTouchEnd={(e) => { e.stopPropagation(); setSidebarView('lines'); setMobileSidebarOpen(true); setMenuExpanded(false); setMenuReady(false); }}
+                        className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left font-body flex items-center gap-2"
+                      >
+                        <Target className="w-4 h-4 shrink-0" /> Your Lines
+                      </button>
+                      <button
+                        onTouchEnd={(e) => { e.stopPropagation(); setSidebarView('openings'); setMobileSidebarOpen(true); setMenuExpanded(false); setMenuReady(false); }}
+                        className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left font-body flex items-center gap-2"
+                      >
+                        <span className="shrink-0">♟️</span> Openings
+                      </button>
+                      <div className="border-t border-border my-1" />
+                      <button
+                        onTouchEnd={(e) => { e.stopPropagation(); navigate('/analysis'); }}
+                        className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left font-body flex items-center gap-2"
+                      >
+                        <BarChart2 className="w-4 h-4 shrink-0" /> Analysis
+                      </button>
+                      <button
+                        onTouchEnd={(e) => { e.stopPropagation(); navigate('/stats'); }}
+                        className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left font-body flex items-center gap-2"
+                      >
+                        <TrendingUp className="w-4 h-4 shrink-0" /> Stats
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* ── DESKTOP: original CSS hover, completely unchanged ── */}
+              <div className="hidden sm:block group">
+                <div className="bg-card border border-border rounded-r-xl shadow-elevated overflow-visible w-14 hover:w-[250px] transition-all duration-400 cursor-pointer">
+                  <div className="gradient-gold py-4 px-2 text-center text-primary-foreground font-bold pointer-events-auto flex flex-col items-center justify-center gap-1">
+                    <Menu className="w-6 h-6" />
+                    <span className="text-[10px] font-semibold tracking-wide leading-none">MENU</span>
+                  </div>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200 p-3 space-y-2 pointer-events-auto">
+                    <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide px-1 pb-1 font-body">Practice</p>
+                    <button
+                      onClick={() => { setSidebarView('lines'); setMobileSidebarOpen(true); }}
+                      className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left hover:bg-surface-elevated transition-all duration-300 font-body flex items-center gap-2"
+                    >
+                      <Target className="w-4 h-4 shrink-0" /> Your Lines
+                    </button>
+                    <button
+                      onClick={() => { setSidebarView('openings'); setMobileSidebarOpen(true); }}
+                      className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left hover:bg-surface-elevated transition-all duration-300 font-body flex items-center gap-2"
+                    >
+                      <span className="shrink-0">♟️</span> Openings
+                    </button>
+                    <div className="border-t border-border my-1" />
+                    <button
+                      onClick={() => navigate('/analysis')}
+                      className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left hover:bg-surface-elevated transition-all duration-300 font-body flex items-center gap-2"
+                    >
+                      <BarChart2 className="w-4 h-4 shrink-0" /> Analysis
+                    </button>
+                    <button
+                      onClick={() => navigate('/stats')}
+                      className="w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm text-left hover:bg-surface-elevated transition-all duration-300 font-body flex items-center gap-2"
+                    >
+                      <TrendingUp className="w-4 h-4 shrink-0" /> Stats
+                    </button>
+                  </div>
+                </div>
+              </div>
+
             </motion.div>
           )}
         </AnimatePresence>

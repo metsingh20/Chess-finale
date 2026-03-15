@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 
 interface ChessBoardProps {
   board: (string | null)[][];
@@ -43,6 +43,22 @@ export default function ChessBoard({
     };
   }, [lastMove]);
 
+  // Prevent page scroll when touching the board on mobile.
+  // Must be a non-passive listener — React's synthetic events are passive by default
+  // so they can't call preventDefault() on touchmove.
+  const boardRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = boardRef.current;
+    if (!el) return;
+    const prevent = (e: TouchEvent) => e.preventDefault();
+    el.addEventListener('touchmove', prevent, { passive: false });
+    el.addEventListener('touchstart', prevent, { passive: false });
+    return () => {
+      el.removeEventListener('touchmove', prevent);
+      el.removeEventListener('touchstart', prevent);
+    };
+  }, []);
+
   const squares = [];
 
   for (let displayRow = 0; displayRow < 8; displayRow++) {
@@ -78,6 +94,7 @@ export default function ChessBoard({
             aspectRatio: '1',
           }}
           onClick={() => onSquareClick(row, col)}
+          onTouchEnd={(e) => { e.stopPropagation(); onSquareClick(row, col); }}
         >
           {/* Coordinates */}
           {isBottomRow && (
@@ -120,10 +137,10 @@ export default function ChessBoard({
   }
 
   return (
-    <div className="bg-card p-3 sm:p-4 rounded-xl shadow-elevated border border-border">
+    <div ref={boardRef} className="bg-card p-3 sm:p-4 rounded-xl shadow-elevated border border-border" style={{ touchAction: 'none' }}>
       <div
         className="grid grid-cols-8 border-2 border-border rounded-sm overflow-hidden"
-        style={{ maxWidth: '464px', width: '100%' }}
+        style={{ maxWidth: '464px', width: '100%', touchAction: 'none' }}
       >
         {squares}
       </div>

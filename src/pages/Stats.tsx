@@ -424,7 +424,7 @@ const Stats = () => {
           boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
           transition: { duration: 0.3 }
         }}
-        className="bg-white rounded-2xl p-6 relative overflow-hidden group cursor-pointer border border-gray-100"
+        className="bg-white rounded-2xl p-4 sm:p-6 relative overflow-hidden group cursor-pointer border border-gray-100"
         style={{
           boxShadow: '0 4px 24px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04)',
         }}
@@ -444,9 +444,9 @@ const Stats = () => {
         />
 
         {/* Header */}
-        <div className="flex items-start justify-between mb-5">
+        <div className="flex items-start justify-between mb-3 sm:mb-5">
           <div className="flex-1 min-w-0 pr-3">
-            <h3 className="font-bold text-gray-900 text-lg mb-2 truncate leading-tight">
+            <h3 className="font-bold text-gray-900 text-base sm:text-lg mb-1 sm:mb-2 truncate leading-tight">
               {name}
             </h3>
             <div className="flex items-center gap-2">
@@ -462,7 +462,7 @@ const Stats = () => {
         </div>
 
         {/* Chart */}
-        <div className="mb-5 bg-gray-50 rounded-xl p-3">
+        <div className="mb-3 sm:mb-5 bg-gray-50 rounded-xl p-2 sm:p-3">
           {chartType === 'horizontal-bar' && <HorizontalBarChart attempts={stats.attempts} correct={stats.correct} color={medal.color} />}
           {chartType === 'vertical-bar' && <VerticalBarChart attempts={stats.attempts} correct={stats.correct} color={medal.color} />}
           {chartType === 'grouped-bar' && <GroupedBarChart attempts={stats.attempts} correct={stats.correct} color={medal.color} />}
@@ -474,7 +474,7 @@ const Stats = () => {
         </div>
 
         {/* Chart Type Label */}
-        <div className="text-xs text-gray-500 mb-4 text-center font-medium uppercase tracking-wider bg-gray-100 py-1.5 rounded">
+        <div className="text-xs text-gray-500 mb-3 sm:mb-4 text-center font-medium uppercase tracking-wider bg-gray-100 py-1.5 rounded">
           {chartType === 'horizontal-bar' && '━ Horizontal Bar Chart'}
           {chartType === 'vertical-bar' && '▬ Vertical Bar Chart'}
           {chartType === 'grouped-bar' && '▬▬ Grouped Bar Chart'}
@@ -486,22 +486,22 @@ const Stats = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center bg-gray-50 rounded-lg p-2.5">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="text-center bg-gray-50 rounded-lg p-2 sm:p-2.5">
             <div className="text-xs text-gray-500 mb-1 font-medium">Accuracy</div>
-            <div className="text-xl font-bold" style={{ color: medal.color }}>
+            <div className="text-base sm:text-xl font-bold" style={{ color: medal.color }}>
               {accuracy}%
             </div>
           </div>
-          <div className="text-center bg-gray-50 rounded-lg p-2.5">
+          <div className="text-center bg-gray-50 rounded-lg p-2 sm:p-2.5">
             <div className="text-xs text-gray-500 mb-1 font-medium">Attempts</div>
-            <div className="text-xl font-bold text-gray-700">
+            <div className="text-base sm:text-xl font-bold text-gray-700">
               {stats.attempts}
             </div>
           </div>
-          <div className="text-center bg-gray-50 rounded-lg p-2.5">
+          <div className="text-center bg-gray-50 rounded-lg p-2 sm:p-2.5">
             <div className="text-xs text-gray-500 mb-1 font-medium">Correct</div>
-            <div className="text-xl font-bold text-emerald-600">
+            <div className="text-base sm:text-xl font-bold text-emerald-600">
               {stats.correct}
             </div>
           </div>
@@ -591,19 +591,19 @@ const Stats = () => {
         transition={{ duration: 0.5 }}
         className="max-w-4xl w-full mx-auto px-4"
       >
-        <div className="text-center mb-12">
+        <div className="text-center mb-6 sm:mb-12">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="flex justify-center mb-6"
+            className="flex justify-center mb-4 sm:mb-6"
           >
-            <BarChart3 className="w-24 h-24 text-white" />
+            <BarChart3 className="w-14 h-14 sm:w-24 sm:h-24 text-white" />
           </motion.div>
-          <h1 className="font-display text-5xl font-bold text-white mb-4">
+          <h1 className="font-display text-3xl sm:text-5xl font-bold text-white mb-3 sm:mb-4">
             Analytics Dashboard
           </h1>
-          <p className="text-xl text-white/80 font-body">
+          <p className="text-base sm:text-xl text-white/80 font-body">
             Choose your view to explore performance metrics
           </p>
         </div>
@@ -619,12 +619,12 @@ const Stats = () => {
               setSelectedView('openings');
               setShowCurtains(true);
             }}
-            className="bg-white rounded-2xl p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-purple-200 group"
+            className="bg-white rounded-2xl p-5 sm:p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-purple-200 group"
           >
-            <div className="flex justify-start mb-4">
-              <BookOpen className="w-14 h-14 text-purple-600 group-hover:scale-110 transition-transform duration-300" />
+            <div className="flex justify-start mb-3 sm:mb-4">
+              <BookOpen className="w-10 h-10 sm:w-14 sm:h-14 text-purple-600 group-hover:scale-110 transition-transform duration-300" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2 font-display">Openings Dashboard</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 font-display">Openings Dashboard</h3>
             <p className="text-gray-600 font-body">
               Analyze your performance across different chess openings
             </p>
@@ -644,12 +644,12 @@ const Stats = () => {
               setSelectedView('lines');
               setShowCurtains(true);
             }}
-            className="bg-white rounded-2xl p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-pink-200 group"
+            className="bg-white rounded-2xl p-5 sm:p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-pink-200 group"
           >
-            <div className="flex justify-start mb-4">
-              <Target className="w-14 h-14 text-pink-600 group-hover:scale-110 transition-transform duration-300" />
+            <div className="flex justify-start mb-3 sm:mb-4">
+              <Target className="w-10 h-10 sm:w-14 sm:h-14 text-pink-600 group-hover:scale-110 transition-transform duration-300" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2 font-display">Lines Dashboard</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 font-display">Lines Dashboard</h3>
             <p className="text-gray-600 font-body">
               Track your custom lines and training sequences
             </p>
@@ -732,64 +732,64 @@ const Stats = () => {
 
     return (
       <div className="w-full h-full overflow-y-auto">
-        <div className="w-full mx-auto px-6 py-8 max-w-7xl">
+        <div className="w-full mx-auto px-3 sm:px-6 py-4 sm:py-8 max-w-7xl">
           {/* Dashboard Header */}
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-center mb-10"
+            className="text-center mb-5 sm:mb-10"
           >
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-purple-600 mb-3">
+            <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-purple-600 mb-2 sm:mb-3">
               {isOpeningsView ? 'Opening Analytics Dashboard' : 'Lines Analytics Dashboard'}
             </h1>
-            <p className="text-gray-600 font-body text-lg">
+            <p className="text-gray-600 font-body text-sm sm:text-lg">
               {entries.length} items tracked • {totalAttempts} total attempts • {overallAccuracy}% overall accuracy
             </p>
           </motion.div>
 
           {/* Summary Cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-3 md:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-10">
             <motion.div
               initial={{ x: -300, opacity: 0, rotate: -15 }}
               animate={{ x: 0, opacity: 1, rotate: 0 }}
               transition={{ delay: 0.4, duration: 0.4, type: "spring", stiffness: 120 }}
-              className="bg-blue-100 rounded-2xl p-6 border border-blue-200"
+              className="bg-blue-100 rounded-2xl p-3 sm:p-6 border border-blue-200"
               style={{ boxShadow: '0 8px 30px rgba(59, 130, 246, 0.2)' }}
             >
-              <div className="flex justify-start mb-3">
-                <Target className="w-10 h-10 text-blue-600" />
+              <div className="flex justify-start mb-2 sm:mb-3">
+                <Target className="w-6 h-6 sm:w-10 sm:h-10 text-blue-600" />
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">{totalAttempts}</div>
-              <div className="text-sm text-gray-700 font-semibold uppercase tracking-wide">Total Attempts</div>
+              <div className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1">{totalAttempts}</div>
+              <div className="text-xs sm:text-sm text-gray-700 font-semibold uppercase tracking-wide">Total Attempts</div>
             </motion.div>
 
             <motion.div
               initial={{ y: -300, opacity: 0, scale: 0.7 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, duration: 0.4, type: "spring", stiffness: 120 }}
-              className="bg-emerald-100 rounded-2xl p-6 border border-emerald-200"
+              className="bg-emerald-100 rounded-2xl p-3 sm:p-6 border border-emerald-200"
               style={{ boxShadow: '0 8px 30px rgba(16, 185, 129, 0.2)' }}
             >
-              <div className="flex justify-start mb-3">
-                <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+              <div className="flex justify-start mb-2 sm:mb-3">
+                <CheckCircle2 className="w-6 h-6 sm:w-10 sm:h-10 text-emerald-600" />
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">{overallAccuracy}%</div>
-              <div className="text-sm text-gray-700 font-semibold uppercase tracking-wide">Overall Accuracy</div>
+              <div className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1">{overallAccuracy}%</div>
+              <div className="text-xs sm:text-sm text-gray-700 font-semibold uppercase tracking-wide">Overall Accuracy</div>
             </motion.div>
 
             <motion.div
               initial={{ x: 300, opacity: 0, rotate: 15 }}
               animate={{ x: 0, opacity: 1, rotate: 0 }}
               transition={{ delay: 0.6, duration: 1.0, type: "spring", stiffness: 60 }}
-              className="bg-purple-100 rounded-2xl p-6 border border-purple-200"
+              className="bg-purple-100 rounded-2xl p-3 sm:p-6 border border-purple-200"
               style={{ boxShadow: '0 8px 30px rgba(168, 85, 247, 0.2)' }}
             >
-              <div className="flex justify-start mb-3">
-                <BookOpen className="w-10 h-10 text-purple-600" />
+              <div className="flex justify-start mb-2 sm:mb-3">
+                <BookOpen className="w-6 h-6 sm:w-10 sm:h-10 text-purple-600" />
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-1">{entries.length}</div>
-              <div className="text-sm text-gray-700 font-semibold uppercase tracking-wide">
+              <div className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1">{entries.length}</div>
+              <div className="text-xs sm:text-sm text-gray-700 font-semibold uppercase tracking-wide">
                 {isOpeningsView ? 'Openings' : 'Lines'} Tracked
               </div>
             </motion.div>
@@ -802,10 +802,10 @@ const Stats = () => {
             transition={{ delay: 0.8 }}
             className="mb-10"
           >
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">
               Individual Performance Models
             </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {entries.map(([name, stats], index) => (
                 <ChartCard
                   key={name}
@@ -823,16 +823,16 @@ const Stats = () => {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 2.0 }}
-            className="text-center mt-12 pb-12"
+            className="text-center mt-8 sm:mt-12 pb-8 sm:pb-12"
           >
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
               <button
                 onClick={() => {
                   setShowDashboard(false);
                   setShowCurtains(false);
                   setSelectedView('selection');
                 }}
-                className="px-10 py-4 bg-gray-800 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:bg-gray-900 font-body flex items-center gap-2"
+                className="w-full sm:w-auto px-6 sm:px-10 py-3 sm:py-4 bg-gray-800 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:bg-gray-900 font-body flex items-center justify-center gap-2"
               >
                 <Home className="w-5 h-5" />
                 Back to Selection
@@ -840,7 +840,7 @@ const Stats = () => {
 
               <button
                 onClick={() => setShowResetConfirm(true)}
-                className="px-10 py-4 bg-red-600 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:bg-red-700 font-body flex items-center gap-2"
+                className="w-full sm:w-auto px-6 sm:px-10 py-3 sm:py-4 bg-red-600 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:bg-red-700 font-body flex items-center justify-center gap-2"
               >
                 <RotateCcw className="w-5 h-5" />
                 Reset {selectedView === 'openings' ? 'Openings' : 'Lines'} Stats
@@ -861,7 +861,7 @@ const Stats = () => {
           : '#8B5CF6'  // Solid purple
       }}
     >
-      <header className="flex-shrink-0 flex items-center justify-between p-6 relative z-[70]">
+      <header className="flex-shrink-0 flex items-center justify-between p-3 sm:p-6 relative z-[70]">
 <div className="flex items-center gap-3">
   <button
     onClick={() => {
@@ -895,7 +895,7 @@ const Stats = () => {
 </div>
         <div className="flex items-center gap-2">
           <span className="text-3xl">♔</span>
-          <span className={`font-display font-bold text-xl ${
+          <span className={`font-display font-bold text-base sm:text-xl ${
             showDashboard ? 'text-gray-900' : 'text-white'
           }`}>
             Chess Analytics
