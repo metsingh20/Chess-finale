@@ -1,5 +1,5 @@
 import { Upload } from 'lucide-react';
-import React from 'react';
+import React, { useRef } from 'react';
 import { GameData } from '@/lib/pgn-parser';
 
 interface GameSidebarProps {
@@ -21,14 +21,63 @@ export default function GameSidebar({
   showUpload = false,
   onFileUpload,
 }: GameSidebarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (!onFileUpload) return;
+
+    // Modern Android Chrome (86+) and desktop Chrome support showOpenFilePicker.
+    // This opens the real Files/Documents app directly — no media picker, no
+    // greyed-out files — because we bypass the <input> accept filter entirely.
+    if ('showOpenFilePicker' in window) {
+      try {
+        const [fileHandle] = await (window as any).showOpenFilePicker({
+          types: [
+            {
+              description: 'PGN Chess Files',
+              accept: { 'text/plain': ['.pgn', '.txt'] },
+            },
+          ],
+          excludeAcceptAllOption: false,
+          multiple: false,
+        });
+        const file: File = await fileHandle.getFile();
+
+        // Build a synthetic ChangeEvent so the existing onFileUpload handler
+        // in Practice.tsx works without any changes.
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        const input = fileInputRef.current!;
+        Object.defineProperty(input, 'files', { value: dt.files, writable: true });
+        const syntheticEvent = {
+          target: input,
+          currentTarget: input,
+          preventDefault: () => {},
+          stopPropagation: () => {},
+        } as unknown as React.ChangeEvent<HTMLInputElement>;
+        onFileUpload(syntheticEvent);
+        return;
+      } catch (err: any) {
+        // AbortError = user cancelled — do nothing.
+        // Any other error = fall through to the legacy <input> picker below.
+        if (err?.name === 'AbortError') return;
+      }
+    }
+
+    // Fallback for browsers without showOpenFilePicker (older Android, Firefox,
+    // Safari <15.2). accept="*/*" keeps all files selectable even though it
+    // shows the "Choose an action" sheet — user can tap Files from there.
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="bg-card rounded-xl border border-border shadow-elevated p-3 w-[240px] max-h-[520px] flex flex-col">
-      {/* BACK BUTTON - With explicit spacing and z-index */}
+      {/* BACK BUTTON */}
       <button
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('BACK BUTTON CLICKED!');
           onBack();
         }}
         className="flex items-center gap-2 w-full p-3 bg-muted rounded-lg text-foreground font-semibold text-sm hover:bg-surface-elevated active:bg-muted/70 transition-colors duration-200 font-body mb-3"
@@ -38,42 +87,39 @@ export default function GameSidebar({
           WebkitTapHighlightColor: 'transparent',
           position: 'relative',
           zIndex: 10,
-          minHeight: '44px'
+          minHeight: '44px',
         }}
       >
         ← Back
       </button>
 
-      {/* Title - With pointer-events-none to prevent blocking */}
+      {/* Title */}
       <h2
         className="font-display text-base font-bold text-foreground mb-2"
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          pointerEvents: 'none'
-        }}
+        style={{ position: 'relative', zIndex: 1, pointerEvents: 'none' }}
       >
         {title}
       </h2>
 
       {showUpload && onFileUpload && (
         <div className="mb-2" style={{ position: 'relative', zIndex: 1 }}>
-          <label
+          {/* Button triggers showOpenFilePicker (real Files app) on modern Android/Chrome */}
+          <button
+            onClick={handleUploadClick}
             className="block w-full py-2 gradient-gold text-primary-foreground text-center rounded-lg cursor-pointer font-semibold text-xs hover:shadow-gold hover:scale-[1.02] transition-all duration-300 font-body"
             style={{ pointerEvents: 'auto' }}
           >
             <Upload className="w-4 h-4 inline-block mr-1 align-text-bottom" /> Upload PGN
-            <input
-              type="file"
-              // FIX: On Android, accept="*/*" opens the media picker (camera/photos).
-              // Using "text/*" forces Android to open the Files/Documents app instead,
-              // since PGN files are plain text. This works on both Android and iOS.
-              // Validation is handled downstream by parsePGN — invalid files are rejected.
-              accept="text/*"
-              onChange={onFileUpload}
-              className="hidden"
-            />
-          </label>
+          </button>
+
+          {/* Hidden fallback input for browsers without showOpenFilePicker */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="*/*"
+            onChange={onFileUpload}
+            className="hidden"
+          />
         </div>
       )}
 
