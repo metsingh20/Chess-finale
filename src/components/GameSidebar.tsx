@@ -65,11 +65,11 @@ export default function GameSidebar({
             <Upload className="w-4 h-4 inline-block mr-1 align-text-bottom" /> Upload PGN
             <input
               type="file"
-              // FIX: Android (and iOS) do not recognise ".pgn" as a known MIME type,
-              // so any accept value that references it greys out the files in the picker.
-              // Using "*/*" allows all files to be selectable on every platform.
+              // FIX: On Android, accept="*/*" opens the media picker (camera/photos).
+              // Using "text/*" forces Android to open the Files/Documents app instead,
+              // since PGN files are plain text. This works on both Android and iOS.
               // Validation is handled downstream by parsePGN — invalid files are rejected.
-              accept="*/*"
+              accept="text/*"
               onChange={onFileUpload}
               className="hidden"
             />
