@@ -1,5 +1,5 @@
-import { Upload } from 'lucide-react';
-import React, { useRef } from 'react';
+import { Upload, ClipboardPaste, X, Check } from 'lucide-react';
+import React, { useState } from 'react';
 import { GameData } from '@/lib/pgn-parser';
 
 interface GameSidebarProps {
@@ -10,6 +10,7 @@ interface GameSidebarProps {
   onBack: () => void;
   showUpload?: boolean;
   onFileUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onPgnText?: (text: string) => void; // NEW: handles pasted PGN text
 }
 
 export default function GameSidebar({
@@ -20,55 +21,16 @@ export default function GameSidebar({
   onBack,
   showUpload = false,
   onFileUpload,
+  onPgnText,
 }: GameSidebarProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showPasteArea, setShowPasteArea] = useState(false);
+  const [pasteValue, setPasteValue] = useState('');
 
-  const handleUploadClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (!onFileUpload) return;
-
-    // Modern Android Chrome (86+) and desktop Chrome support showOpenFilePicker.
-    // This opens the real Files/Documents app directly — no media picker, no
-    // greyed-out files — because we bypass the <input> accept filter entirely.
-    if ('showOpenFilePicker' in window) {
-      try {
-        const [fileHandle] = await (window as any).showOpenFilePicker({
-          types: [
-            {
-              description: 'PGN Chess Files',
-              accept: { 'text/plain': ['.pgn', '.txt'] },
-            },
-          ],
-          excludeAcceptAllOption: false,
-          multiple: false,
-        });
-        const file: File = await fileHandle.getFile();
-
-        // Build a synthetic ChangeEvent so the existing onFileUpload handler
-        // in Practice.tsx works without any changes.
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        const input = fileInputRef.current!;
-        Object.defineProperty(input, 'files', { value: dt.files, writable: true });
-        const syntheticEvent = {
-          target: input,
-          currentTarget: input,
-          preventDefault: () => {},
-          stopPropagation: () => {},
-        } as unknown as React.ChangeEvent<HTMLInputElement>;
-        onFileUpload(syntheticEvent);
-        return;
-      } catch (err: any) {
-        // AbortError = user cancelled — do nothing.
-        // Any other error = fall through to the legacy <input> picker below.
-        if (err?.name === 'AbortError') return;
-      }
-    }
-
-    // Fallback for browsers without showOpenFilePicker (older Android, Firefox,
-    // Safari <15.2). accept="*/*" keeps all files selectable even though it
-    // shows the "Choose an action" sheet — user can tap Files from there.
-    fileInputRef.current?.click();
+  const handlePasteLoad = () => {
+    if (!pasteValue.trim() || !onPgnText) return;
+    onPgnText(pasteValue.trim());
+    setPasteValue('');
+    setShowPasteArea(false);
   };
 
   return (
@@ -101,25 +63,60 @@ export default function GameSidebar({
         {title}
       </h2>
 
-      {showUpload && onFileUpload && (
-        <div className="mb-2" style={{ position: 'relative', zIndex: 1 }}>
-          {/* Button triggers showOpenFilePicker (real Files app) on modern Android/Chrome */}
-          <button
-            onClick={handleUploadClick}
-            className="block w-full py-2 gradient-gold text-primary-foreground text-center rounded-lg cursor-pointer font-semibold text-xs hover:shadow-gold hover:scale-[1.02] transition-all duration-300 font-body"
-            style={{ pointerEvents: 'auto' }}
-          >
-            <Upload className="w-4 h-4 inline-block mr-1 align-text-bottom" /> Upload PGN
-          </button>
+      {showUpload && (onFileUpload || onPgnText) && (
+        <div className="mb-2 space-y-1.5" style={{ position: 'relative', zIndex: 1 }}>
 
-          {/* Hidden fallback input for browsers without showOpenFilePicker */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="*/*"
-            onChange={onFileUpload}
-            className="hidden"
-          />
+          {/* Paste PGN — works on every mobile platform */}
+          {!showPasteArea ? (
+            <button
+              onClick={() => setShowPasteArea(true)}
+              className="block w-full py-2 gradient-gold text-primary-foreground text-center rounded-lg cursor-pointer font-semibold text-xs hover:shadow-gold hover:scale-[1.02] transition-all duration-300 font-body"
+            >
+              <ClipboardPaste className="w-4 h-4 inline-block mr-1 align-text-bottom" /> Paste PGN
+            </button>
+          ) : (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-foreground text-xs font-semibold font-body">Paste PGN text:</span>
+                <button
+                  onClick={() => { setShowPasteArea(false); setPasteValue(''); }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <textarea
+                value={pasteValue}
+                onChange={(e) => setPasteValue(e.target.value)}
+                placeholder={'[Event "..."]\n[White "..."]\n\n1. e4 e5 ...'}
+                className="w-full h-24 p-2 bg-muted text-foreground text-[10px] font-mono rounded-lg border border-border resize-none focus:outline-none focus:border-primary/50"
+                autoFocus
+              />
+              <button
+                onClick={handlePasteLoad}
+                disabled={!pasteValue.trim()}
+                className="w-full py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1 font-body"
+              >
+                <Check className="w-3.5 h-3.5" /> Load PGN
+              </button>
+            </div>
+          )}
+
+          {/* File upload — kept as fallback for desktop / file manager */}
+          {onFileUpload && !showPasteArea && (
+            <label
+              className="block w-full py-2 bg-muted text-muted-foreground text-center rounded-lg cursor-pointer font-semibold text-xs hover:bg-surface-elevated transition-all duration-300 font-body border border-border"
+              style={{ pointerEvents: 'auto' }}
+            >
+              <Upload className="w-4 h-4 inline-block mr-1 align-text-bottom" /> Upload File
+              <input
+                type="file"
+                accept="*/*"
+                onChange={onFileUpload}
+                className="hidden"
+              />
+            </label>
+          )}
         </div>
       )}
 
@@ -129,7 +126,7 @@ export default function GameSidebar({
       >
         {games.length === 0 ? (
           <div className="text-muted-foreground text-center py-6 text-xs italic font-body">
-            {showUpload ? 'Upload a PGN file to see your lines' : 'Loading openings...'}
+            {showUpload ? 'Paste or upload a PGN to see your lines' : 'Loading openings...'}
           </div>
         ) : (
           games.map((game, index) => (

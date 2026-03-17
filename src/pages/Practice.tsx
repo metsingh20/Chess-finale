@@ -251,6 +251,31 @@ const Practice = () => {
     e.target.value = '';
   }, [selectGame, showMessage, isGuest, canUploadLine, trackLineUpload]);
 
+const handlePgnText = useCallback((text: string) => {
+    if (isGuest && !canUploadLine()) {
+      setGuestLimitType('lines');
+      setShowGuestLimitDialog(true);
+      return;
+    }
+ 
+    const games = parsePGN(text);
+    if (games.length === 0) {
+      showMessage('No valid games found in PGN text', 'error');
+      return;
+    }
+ 
+    if (isGuest) {
+      trackLineUpload();
+    }
+ 
+    setFileUploaded(true);
+    setAllGames(games);
+    selectGame(0, games);
+    showMessage(`Loaded ${games.length} game(s)!`, 'success');
+  }, [selectGame, showMessage, isGuest, canUploadLine, trackLineUpload]);
+ 
+
+
   const handleSquareClick = useCallback((row: number, col: number) => {
     if (!gameLoaded || mode !== 'guess') return;
     if (moveIndex >= totalMoves) {
@@ -611,6 +636,7 @@ const Practice = () => {
                   }}
                   showUpload
                   onFileUpload={handleFileUpload}
+                  onPgnText={handlePgnText}
                 />
               </motion.div>
             )}
