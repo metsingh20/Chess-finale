@@ -65,7 +65,10 @@ export default function GameSidebar({
             <Upload className="w-4 h-4 inline-block mr-1 align-text-bottom" /> Upload PGN
             <input
               type="file"
-              accept=".pgn"
+              // FIX: iOS does not recognise ".pgn" as a known MIME type, which greys out
+              // every file in the native picker. Listing the extension alongside common
+              // text MIME types ensures the files are selectable on all mobile platforms.
+              accept=".pgn,.txt,text/plain"
               onChange={onFileUpload}
               className="hidden"
             />

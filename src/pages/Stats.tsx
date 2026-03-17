@@ -591,24 +591,31 @@ const Stats = () => {
         transition={{ duration: 0.5 }}
         className="max-w-4xl w-full mx-auto px-4"
       >
-        <div className="text-center mb-6 sm:mb-12">
+        {/* Header — smaller on mobile to leave room for the cards */}
+        <div className="text-center mb-3 sm:mb-12">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="flex justify-center mb-4 sm:mb-6"
+            className="flex justify-center mb-2 sm:mb-6"
           >
-            <BarChart3 className="w-14 h-14 sm:w-24 sm:h-24 text-white" />
+            <BarChart3 className="w-10 h-10 sm:w-24 sm:h-24 text-white" />
           </motion.div>
-          <h1 className="font-display text-3xl sm:text-5xl font-bold text-white mb-3 sm:mb-4">
+          <h1 className="font-display text-2xl sm:text-5xl font-bold text-white mb-1 sm:mb-4">
             Analytics Dashboard
           </h1>
-          <p className="text-base sm:text-xl text-white/80 font-body">
+          <p className="text-sm sm:text-xl text-white/80 font-body">
             Choose your view to explore performance metrics
           </p>
         </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
+ 
+        {/*
+          FIX: Use grid-cols-2 at ALL widths so both cards are always
+          side-by-side. Previously "md:grid-cols-2" caused a single-column
+          layout on phones where the second card was cut off by the locked
+          viewport height.
+        */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-6">
           <motion.button
             initial={{ x: -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -619,21 +626,21 @@ const Stats = () => {
               setSelectedView('openings');
               setShowCurtains(true);
             }}
-            className="bg-white rounded-2xl p-5 sm:p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-purple-200 group"
+            className="bg-white rounded-2xl p-3 sm:p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-purple-200 group"
           >
-            <div className="flex justify-start mb-3 sm:mb-4">
-              <BookOpen className="w-10 h-10 sm:w-14 sm:h-14 text-purple-600 group-hover:scale-110 transition-transform duration-300" />
+            <div className="flex justify-start mb-2 sm:mb-4">
+              <BookOpen className="w-7 h-7 sm:w-14 sm:h-14 text-purple-600 group-hover:scale-110 transition-transform duration-300" />
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 font-display">Openings Dashboard</h3>
-            <p className="text-gray-600 font-body">
+            <h3 className="text-sm sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 font-display">Openings Dashboard</h3>
+            <p className="hidden sm:block text-gray-600 font-body text-sm">
               Analyze your performance across different chess openings
             </p>
-            <div className="mt-6 flex items-center text-purple-600 font-semibold">
+            <div className="mt-2 sm:mt-6 flex items-center text-purple-600 font-semibold text-xs sm:text-base">
               View Analytics
-              <span className="ml-2 group-hover:translate-x-2 transition-transform duration-300">→</span>
+              <span className="ml-1 sm:ml-2 group-hover:translate-x-2 transition-transform duration-300">→</span>
             </div>
           </motion.button>
-
+ 
           <motion.button
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -644,24 +651,24 @@ const Stats = () => {
               setSelectedView('lines');
               setShowCurtains(true);
             }}
-            className="bg-white rounded-2xl p-5 sm:p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-pink-200 group"
+            className="bg-white rounded-2xl p-3 sm:p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-pink-200 group"
           >
-            <div className="flex justify-start mb-3 sm:mb-4">
-              <Target className="w-10 h-10 sm:w-14 sm:h-14 text-pink-600 group-hover:scale-110 transition-transform duration-300" />
+            <div className="flex justify-start mb-2 sm:mb-4">
+              <Target className="w-7 h-7 sm:w-14 sm:h-14 text-pink-600 group-hover:scale-110 transition-transform duration-300" />
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 font-display">Lines Dashboard</h3>
-            <p className="text-gray-600 font-body">
+            <h3 className="text-sm sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 font-display">Lines Dashboard</h3>
+            <p className="hidden sm:block text-gray-600 font-body text-sm">
               Track your custom lines and training sequences
             </p>
-            <div className="mt-6 flex items-center text-pink-600 font-semibold">
+            <div className="mt-2 sm:mt-6 flex items-center text-pink-600 font-semibold text-xs sm:text-base">
               View Analytics
-              <span className="ml-2 group-hover:translate-x-2 transition-transform duration-300">→</span>
+              <span className="ml-1 sm:ml-2 group-hover:translate-x-2 transition-transform duration-300">→</span>
             </div>
           </motion.button>
         </div>
       </motion.div>
     );
-  };
+  };;
 
   const renderDashboard = () => {
     if (!statsData) {
