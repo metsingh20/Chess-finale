@@ -37,7 +37,6 @@ const Auth = () => {
 
   // COMPLETELY LOCK SCROLLING - No black space
   useEffect(() => {
-    // Prevent ALL scrolling on body and html
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
     document.body.style.height = '100vh';
@@ -45,7 +44,6 @@ const Auth = () => {
     document.body.style.position = 'fixed';
     document.body.style.width = '100%';
 
-    // Cleanup on unmount
     return () => {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
@@ -67,7 +65,6 @@ const Auth = () => {
     setError('');
     setSuccess('');
 
-    // Validate
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
       setError(emailResult.error.errors[0].message);
@@ -104,10 +101,8 @@ const Auth = () => {
           setError(error.message);
         }
       } else {
-        // Show the verification dialog
         setSignupEmail(email);
         setShowVerificationDialog(true);
-        // Clear the form
         setEmail('');
         setPassword('');
       }
@@ -158,13 +153,35 @@ const Auth = () => {
 
   const handleCloseVerificationDialog = () => {
     setShowVerificationDialog(false);
-    setIsLogin(true); // Switch to login tab
+    setIsLogin(true);
   };
 
   return (
-    <div className="fixed inset-0 w-screen h-screen overflow-hidden flex items-center justify-center p-4" style={{ background: 'var(--gradient-hero)' }}>
+    <div className="fixed inset-0 w-screen h-screen overflow-hidden flex items-center justify-center p-4">
+
+      {/* ── VIDEO BACKGROUND ── */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ zIndex: 0 }}
+      >
+        <source src="/index.mp4" type="video/mp4" />
+      </video>
+
+      {/* Dark overlay so the form stays readable over the video */}
+      <div
+        className="absolute inset-0"
+        style={{ background: 'rgba(8, 4, 22, 0.65)', zIndex: 1 }}
+      />
+
       {/* Decorative chess pieces */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-5">
+      <div
+        className="absolute inset-0 overflow-hidden pointer-events-none opacity-5"
+        style={{ zIndex: 2 }}
+      >
         <span className="absolute top-10 left-10 text-[120px]">♔</span>
         <span className="absolute top-20 right-20 text-[100px]">♛</span>
         <span className="absolute bottom-10 left-1/4 text-[80px]">♞</span>
@@ -175,7 +192,8 @@ const Auth = () => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-md"
+        style={{ position: 'relative', zIndex: 10 }}
       >
         <div className="bg-card rounded-2xl p-8 shadow-elevated border border-border">
           {/* Logo */}
@@ -326,7 +344,7 @@ const Auth = () => {
               </button>
 
               <p className="text-center text-xs text-muted-foreground font-body mt-2">
-                Guest mode: Try 5 openings & upload 5 PGN files
+                Guest mode: Try 5 openings &amp; upload 5 PGN files
               </p>
             </motion.form>
           </AnimatePresence>
@@ -428,34 +446,23 @@ const Auth = () => {
               </p>
             </div>
 
-            <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg text-left">
-              <p className="text-foreground/90 font-body text-sm leading-relaxed">
-                <strong className="text-primary flex items-center gap-1"><MailOpen className="w-4 h-4 inline-block" /> Check your inbox</strong>
-                <br />
-                Click the verification link in the email to activate your account.
-              </p>
+            <div className="bg-muted/50 rounded-xl p-4 text-left space-y-2">
+              <div className="flex items-start gap-2">
+                <MailOpen className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <p className="text-foreground/80 font-body text-sm">Check your inbox and click the verification link</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <p className="text-foreground/80 font-body text-sm">Check your spam folder if you don't see it</p>
+              </div>
             </div>
 
-            <div className="bg-muted/50 rounded-lg p-4 text-left">
-              <p className="text-muted-foreground font-body text-xs leading-relaxed">
-                <strong className="text-foreground flex items-center gap-1"><Lightbulb className="w-4 h-4 inline-block" /> Didn't receive the email?</strong>
-                <br />
-                • Check your spam/junk folder
-                <br />
-                • Make sure you entered the correct email
-                <br />
-                • Wait a few minutes for the email to arrive
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={handleCloseVerificationDialog}
-                className="w-full py-3 gradient-gold text-primary-foreground font-semibold rounded-lg transition-all duration-300 hover:shadow-gold hover:scale-[1.02] font-body"
-              >
-                Got it! Go to Sign In
-              </button>
-            </div>
+            <button
+              onClick={handleCloseVerificationDialog}
+              className="w-full py-3 gradient-gold text-primary-foreground font-semibold rounded-lg transition-all duration-300 hover:shadow-gold hover:scale-[1.02] font-body"
+            >
+              Back to Sign In
+            </button>
           </div>
         </DialogContent>
       </Dialog>

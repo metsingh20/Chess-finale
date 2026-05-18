@@ -9,6 +9,7 @@ import PromotionDialog from '@/components/PromotionDialog';
 import GuestLimitDialog from '@/components/GuestLimitDialog';
 import GuestBanner from '@/components/GuestBanner';
 import { StatsTrackingToggle } from '@/components/StatsTrackingToggle';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ChessEngine } from '@/lib/chess-engine';
 import { parsePGN, GameData } from '@/lib/pgn-parser';
 import { recordOpeningAttempt, recordLineAttempt, setFileUploaded, buildGameKey } from '@/lib/stats-tracker';
@@ -42,10 +43,95 @@ function parseFEN(fen: string): (string | null)[][] {
   });
 }
 
+// ── Skeleton screen shown while the page initialises ──────────────────────────
+function PracticeSkeleton() {
+  return (
+    <div
+      className="h-screen flex flex-col relative overflow-hidden"
+      style={{
+        backgroundImage: 'url(/wall.jpeg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Overlay matching the live page */}
+      <div className="absolute inset-0 bg-black/55" />
+
+      <div className="relative z-10 flex flex-col h-full">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between p-4 sm:p-6 pl-20 sm:pl-24">
+          <Skeleton className="h-5 w-20 rounded-md bg-white/20" />
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-5 w-28 rounded-md bg-white/20" />
+            <Skeleton className="h-6 w-32 rounded-md bg-white/20" />
+          </div>
+        </div>
+
+        {/* Body skeleton: sidebar stub + board + controls */}
+        <div className="flex-1 flex flex-col lg:flex-row gap-6 justify-center items-start px-4 sm:px-6 pb-8 pt-4">
+
+          {/* Sidebar stub */}
+          <div className="hidden sm:block">
+            <Skeleton className="w-14 h-64 rounded-r-xl bg-white/20" />
+          </div>
+
+          {/* Board skeleton */}
+          <div className="flex flex-col items-center gap-4 w-full lg:w-auto">
+            {/* Progress bar placeholder */}
+            <Skeleton className="h-14 w-full max-w-[464px] rounded-xl bg-white/20" />
+
+            {/* Chess board grid skeleton */}
+            <div
+              className="rounded-xl overflow-hidden shadow-elevated border border-white/10"
+              style={{ width: 'min(464px, 90vw)', aspectRatio: '1' }}
+            >
+              <div className="grid grid-cols-8 h-full w-full">
+                {Array.from({ length: 64 }).map((_, i) => {
+                  const row = Math.floor(i / 8);
+                  const col = i % 8;
+                  const isLight = (row + col) % 2 === 0;
+                  return (
+                    <div
+                      key={i}
+                      className={`relative ${isLight ? 'bg-[#f0d9b5]/40' : 'bg-[#b58863]/40'}`}
+                      style={{ aspectRatio: '1' }}
+                    >
+                      {/* Shimmer pulse overlay */}
+                      <div className="absolute inset-0 animate-pulse bg-white/10" />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Controls panel skeleton */}
+          <div className="hidden sm:flex flex-col gap-3 w-[300px]">
+            <Skeleton className="h-10 w-full rounded-xl bg-white/20" />
+            <Skeleton className="h-24 w-full rounded-xl bg-white/20" />
+            <Skeleton className="h-20 w-full rounded-xl bg-white/20" />
+            <Skeleton className="h-16 w-full rounded-xl bg-white/20" />
+            <Skeleton className="h-32 w-full rounded-xl bg-white/20" />
+          </div>
+        </div>
+      </div>
+
+      {/* Chess piece watermarks (match live page feel) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.04] z-0">
+        <span className="absolute top-10 left-10 text-[160px] text-white">♔</span>
+        <span className="absolute bottom-10 right-10 text-[120px] text-white">♛</span>
+      </div>
+    </div>
+  );
+}
+
 const Practice = () => {
   const navigate = useNavigate();
   const engineRef = useRef(new ChessEngine());
   const engine = engineRef.current;
+
+  // ── Page-level loading state ────────────────────────────────────────────────
+  const [pageReady, setPageReady] = useState(false);
 
   const [board, setBoard] = useState<(string | null)[][]>(parseFEN(INITIAL_FEN));
   const [flipped, setFlipped] = useState(false);
@@ -74,11 +160,11 @@ const Practice = () => {
   // Promotion state
   const [promotionPending, setPromotionPending] = useState<{ from: string; to: string; isWhite: boolean } | null>(null);
 
-  // UI hint state (must be declared so selectGame doesn't crash before the auto-play line)
+  // UI hint state
   const [showDoubleClickHint, setShowDoubleClickHint] = useState(false);
   const [pendingOpeningIndex, setPendingOpeningIndex] = useState<number | null>(null);
 
-  // GUEST MODE: State and hooks
+  // GUEST MODE
   const [showGuestLimitDialog, setShowGuestLimitDialog] = useState(false);
   const [guestLimitType, setGuestLimitType] = useState<'openings' | 'lines'>('openings');
   const {
@@ -89,39 +175,44 @@ const Practice = () => {
     trackLineUpload
   } = useAuth();
 
-  // STATS TRACKING: State for tracking toggle
+  // STATS TRACKING
   const [trackStats, setTrackStats] = useState(() => {
     return localStorage.getItem('trackStats') !== 'false';
   });
 
-  // COMPLETELY LOCK SCROLLING - No black space, no content cutting
+  // ── Show skeleton for a short tick while JS initialises, then reveal ────────
   useEffect(() => {
-    // Reset to top so nothing is cut off
+    const id = setTimeout(() => setPageReady(true), 800);
+    return () => clearTimeout(id);
+  }, []);
+
+  // COMPLETELY LOCK SCROLLING
+  useEffect(() => {
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-    // Lock scroll
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
-    // Paint body background to match page gradient — eliminates black gap below content
-    document.body.style.background = 'linear-gradient(135deg, hsl(270 50% 20%) 0%, hsl(240 15% 5%) 50%, hsl(270 40% 15%) 100%)';
-    document.documentElement.style.background = 'linear-gradient(135deg, hsl(270 50% 20%) 0%, hsl(240 15% 5%) 50%, hsl(270 40% 15%) 100%)';
+    // Match wall.jpeg as the body background to avoid any black flash
+    document.body.style.backgroundImage = 'url(/wall.jpeg)';
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.documentElement.style.background = '#0e0a1a';
     return () => {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      document.body.style.background = '';
+      document.body.style.backgroundImage = '';
+      document.body.style.backgroundSize = '';
+      document.body.style.backgroundPosition = '';
       document.documentElement.style.background = '';
     };
   }, []);
 
-  // STATS TRACKING: Persist tracking preference
+  // STATS TRACKING: Persist preference
   useEffect(() => {
     localStorage.setItem('trackStats', trackStats.toString());
   }, [trackStats]);
 
-  // STATS TRACKING: Per-game session refs.
-  // hasMadeMistakeRef: did the user make any wrong move this session?
-  // hasRecordedAttemptRef: ensures we only write one stat entry per game load.
   const hasMadeMistakeRef = useRef(false);
   const hasRecordedAttemptRef = useRef(false);
 
@@ -193,20 +284,16 @@ const Practice = () => {
     }
 
     const game = games[index];
-    setCurrentGameIndex(index);
     engine.loadGame(game.moves);
-    setTotalMoves(game.totalMoves);
+    setCurrentGameIndex(index);
+    setBoard(parseFEN(engine.getFen()));
     setMoveIndex(0);
-    setGameLoaded(true);
+    setTotalMoves(game.moves.length);
+    setLastMove(null);
     setSelectedSquare(null);
     setLegalMoveSquares([]);
-    setLastMove(null);
-    setBoard(parseFEN(INITIAL_FEN));
-    setMode('guess');
-    showMessage(`Loaded: ${game.white} vs ${game.black}`, 'success');
-    setMobileSidebarOpen(false); // collapse sidebar on mobile after selecting
-
-    // Reset per-game tracking refs for this fresh session
+    setCurrentMoveSan(null);
+    setGameLoaded(true);
     hasMadeMistakeRef.current = false;
     hasRecordedAttemptRef.current = false;
 
@@ -242,39 +329,36 @@ const Practice = () => {
       }
 
       setFileUploaded(true);
-
       setAllGames(games);
-      selectGame(0, games); // pass games directly — avoids stale allGames closure
+      selectGame(0, games);
       showMessage(`Loaded ${games.length} game(s)!`, 'success');
     };
     reader.readAsText(file);
     e.target.value = '';
   }, [selectGame, showMessage, isGuest, canUploadLine, trackLineUpload]);
 
-const handlePgnText = useCallback((text: string) => {
+  const handlePgnText = useCallback((text: string) => {
     if (isGuest && !canUploadLine()) {
       setGuestLimitType('lines');
       setShowGuestLimitDialog(true);
       return;
     }
- 
+
     const games = parsePGN(text);
     if (games.length === 0) {
       showMessage('No valid games found in PGN text', 'error');
       return;
     }
- 
+
     if (isGuest) {
       trackLineUpload();
     }
- 
+
     setFileUploaded(true);
     setAllGames(games);
     selectGame(0, games);
     showMessage(`Loaded ${games.length} game(s)!`, 'success');
   }, [selectGame, showMessage, isGuest, canUploadLine, trackLineUpload]);
- 
-
 
   const handleSquareClick = useCallback((row: number, col: number) => {
     if (!gameLoaded || mode !== 'guess') return;
@@ -332,7 +416,6 @@ const handlePgnText = useCallback((text: string) => {
   const executeMove = useCallback(async (from: string, to: string, promotion?: string) => {
     const result = engine.validateMove(from, to, promotion);
 
-    // Unique, stable key per opening/line: name + position in PGN file
     const currentGame = allGames[currentGameIndex];
     const gameName = trackStats && gameLoaded && currentGame
       ? buildGameKey(currentGame.white, currentGame.event, currentGame.index ?? currentGameIndex)
@@ -347,7 +430,6 @@ const handlePgnText = useCallback((text: string) => {
       const isCompleted = result.nextMoveIndex! >= totalMoves;
 
       if (isCompleted) {
-        // Game complete — record ONE attempt. Correct = no mistakes made.
         if (trackStats && gameLoaded && gameName && !hasRecordedAttemptRef.current) {
           const wasCorrect = !hasMadeMistakeRef.current;
           if (sidebarView === 'openings') {
@@ -378,7 +460,6 @@ const handlePgnText = useCallback((text: string) => {
         }
       }
     } else {
-      // Wrong move — record immediately so stat isn't lost if user leaves
       if (trackStats && gameLoaded && gameName && !hasRecordedAttemptRef.current) {
         hasMadeMistakeRef.current = true;
         if (sidebarView === 'openings') {
@@ -418,11 +499,9 @@ const handlePgnText = useCallback((text: string) => {
     setMoveIndex(0);
     setLastMove(null);
     setCurrentMoveSan(null);
-    // Reset per-game tracking so a fresh attempt can be recorded
     hasMadeMistakeRef.current = false;
     hasRecordedAttemptRef.current = false;
     showMessage('Game reset!', 'success');
-    // When playing as black, white must auto-play the first move after reset
     if (autoRespond && flipped && gameLoaded) {
       setTimeout(() => playOpponentMove(), 300);
     }
@@ -450,7 +529,6 @@ const handlePgnText = useCallback((text: string) => {
     setAutoRespond(newVal);
     showMessage(`Auto Respond ${newVal ? 'enabled' : 'disabled'}`, 'success');
 
-    // Use engine.getMoveIndex() instead of React state moveIndex — state can lag behind
     if (newVal && flipped && gameLoaded && engine.getMoveIndex() === 0) {
       setTimeout(() => playOpponentMove(), 300);
     }
@@ -459,14 +537,30 @@ const handlePgnText = useCallback((text: string) => {
   const colors = BOARD_COLORS[boardColor] || BOARD_COLORS.classic;
   const progress = totalMoves > 0 ? (moveIndex / totalMoves) * 100 : 0;
 
+  // ── Render skeleton while initialising ──────────────────────────────────────
+  if (!pageReady) {
+    return <PracticeSkeleton />;
+  }
+
   return (
-    <div className="h-screen flex flex-col relative" style={{ background: 'var(--gradient-hero)' }}>
+    <div
+      className="h-screen flex flex-col relative"
+      style={{
+        backgroundImage: 'url(/wall.jpeg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      }}
+    >
+      {/* Overlay to keep the UI readable over the image */}
+      <div className="absolute inset-0 bg-black/50 pointer-events-none" style={{ zIndex: 0 }} />
+
       <GuestBanner />
 
       <header className="flex items-center justify-between p-4 sm:p-6 pl-20 sm:pl-24 relative z-10">
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-300 font-body text-sm"
+          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors duration-300 font-body text-sm"
         >
           ← Home
         </button>
@@ -503,7 +597,7 @@ const handlePgnText = useCallback((text: string) => {
               style={{ pointerEvents: 'auto' }}
             >
 
-              {/* ── MOBILE: tap-to-open, buttons only mount in DOM after open ── */}
+              {/* ── MOBILE ── */}
               <div className="block sm:hidden">
                 <div className={`bg-card border border-border rounded-r-xl shadow-elevated transition-all duration-300 ${menuExpanded ? 'w-[250px]' : 'w-14'}`}>
                   <div
@@ -524,7 +618,6 @@ const handlePgnText = useCallback((text: string) => {
                     <Menu className="w-6 h-6" />
                     <span className="text-[10px] font-semibold tracking-wide leading-none">MENU</span>
                   </div>
-                  {/* Only rendered in DOM once open — can't accidentally touch invisible buttons */}
                   {menuExpanded && (
                     <div
                       className="p-3 space-y-2"
@@ -561,7 +654,7 @@ const handlePgnText = useCallback((text: string) => {
                 </div>
               </div>
 
-              {/* ── DESKTOP: original CSS hover, completely unchanged ── */}
+              {/* ── DESKTOP ── */}
               <div className="hidden sm:block group">
                 <div className="bg-card border border-border rounded-r-xl shadow-elevated overflow-visible w-14 hover:w-[250px] transition-all duration-400 cursor-pointer">
                   <div className="gradient-gold py-4 px-2 text-center text-primary-foreground font-bold pointer-events-auto flex flex-col items-center justify-center gap-1">
@@ -630,7 +723,6 @@ const handlePgnText = useCallback((text: string) => {
                   currentGameIndex={currentGameIndex}
                   onSelectGame={selectGame}
                   onBack={() => {
-                    console.log('Lines back clicked');
                     setSidebarView('menu');
                     setMobileSidebarOpen(true);
                   }}
@@ -655,7 +747,6 @@ const handlePgnText = useCallback((text: string) => {
                   currentGameIndex={currentGameIndex}
                   onSelectGame={selectGame}
                   onBack={() => {
-                    console.log('Openings back clicked');
                     setSidebarView('menu');
                     setMobileSidebarOpen(true);
                   }}
@@ -666,8 +757,8 @@ const handlePgnText = useCallback((text: string) => {
         </div>
       </div>
 
-      {/* MAIN: board on the left, ControlsPanel on the right — exactly as original */}
-      <main className={`flex-1 overflow-y-auto flex flex-col lg:flex-row gap-6 justify-center items-start px-4 sm:px-6 pb-8 pt-4 transition-all duration-300 ${
+      {/* MAIN: board + ControlsPanel */}
+      <main className={`flex-1 overflow-y-auto flex flex-col lg:flex-row gap-6 justify-center items-start px-4 sm:px-6 pb-8 pt-4 transition-all duration-300 relative z-10 ${
         sidebarView === 'lines' || sidebarView === 'openings' ? 'lg:ml-[260px]' : ''
       }`}>
 
@@ -679,8 +770,6 @@ const handlePgnText = useCallback((text: string) => {
               setTrackStats={setTrackStats}
             />
           </div>
-
-
 
           {gameLoaded && (
             <motion.div
@@ -716,7 +805,7 @@ const handlePgnText = useCallback((text: string) => {
           />
         </div>
 
-        {/* Right: ControlsPanel — sibling of board div, inside <main> */}
+        {/* Right: ControlsPanel */}
         <ControlsPanel
           mode={mode}
           onSetMode={setMode}
