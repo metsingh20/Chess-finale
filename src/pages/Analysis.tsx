@@ -643,7 +643,9 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
   return (
     // ↓ Changed from minHeight:'100vh' to height:'100vh' + overflow:'hidden'
     //   The inner content div handles its own scrolling
-    <div style={{ height: '100vh', overflow: 'hidden', background: 'linear-gradient(135deg, hsl(270 50% 18%) 0%, hsl(240 15% 6%) 50%, hsl(260 40% 14%) 100%)', color: '#e2e8f0', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100vh', overflow: 'hidden', backgroundImage: 'url(/wall.jpeg)', backgroundSize: 'cover', backgroundPosition: 'center', color: '#e2e8f0', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      {/* Dark overlay so the UI stays readable over the wall image */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,5,25,0.78)', zIndex: 0, pointerEvents: 'none' }} />
 
       {/* Welcome modal */}
       <AnimatePresence>

@@ -608,7 +608,7 @@ const Stats = () => {
             Choose your view to explore performance metrics
           </p>
         </div>
- 
+
         {/*
           FIX: Use grid-cols-2 at ALL widths so both cards are always
           side-by-side. Previously "md:grid-cols-2" caused a single-column
@@ -640,7 +640,7 @@ const Stats = () => {
               <span className="ml-1 sm:ml-2 group-hover:translate-x-2 transition-transform duration-300">→</span>
             </div>
           </motion.button>
- 
+
           <motion.button
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -861,7 +861,7 @@ const Stats = () => {
 
   return (
     <div
-      className="h-screen flex flex-col transition-colors duration-500"
+      className="h-screen flex flex-col transition-colors duration-500 relative overflow-hidden"
       style={{
         background: showDashboard
           ? '#F8FAFC'  // Solid light gray-blue
