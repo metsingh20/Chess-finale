@@ -222,7 +222,7 @@ function EvalBar({ score, isMate, mateIn, isAnalyzing }:
         <div style={{ flex: `${100 - whitePct}`, background: '#2a2a2a', transition: 'flex 0.4s ease' }} />
         <div style={{ flex: `${whitePct}`, background: '#f0d9b5', transition: 'flex 0.4s ease' }} />
       </div>
-      <div style={{ fontSize: 10, color: isAnalyzing ? '#22ff88' : '#aaa', fontFamily: 'monospace', fontWeight: 700 }}>
+      <div style={{ fontSize: 17, color: isAnalyzing ? '#22ff88' : '#aaa', fontFamily: 'monospace', fontWeight: 900 }}>
         {isAnalyzing ? '…' : text}
       </div>
     </div>
@@ -273,8 +273,8 @@ function AnalysisChessBoard({ board, flipped, selectedSquare, legalMoveSquares, 
         result.push(
           <div key={`${row}-${col}`} onClick={interactive ? () => onSquareClick(row, col) : undefined}
             style={{ background: bg, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: interactive ? 'pointer' : 'default', userSelect: 'none', WebkitUserSelect: 'none' }}>
-            {dCol === 0 && <span style={{ position: 'absolute', top: '5%', left: '6%', fontSize: '0.6em', fontWeight: 700, lineHeight: 1, opacity: 0.65, pointerEvents: 'none', color: isLight ? DARK_SQ : LIGHT_SQ }}>{8 - row}</span>}
-            {dRow === 7 && <span style={{ position: 'absolute', bottom: '4%', right: '6%', fontSize: '0.6em', fontWeight: 700, lineHeight: 1, opacity: 0.65, pointerEvents: 'none', color: isLight ? DARK_SQ : LIGHT_SQ }}>{String.fromCharCode(97 + col)}</span>}
+            {dCol === 0 && <span style={{ position: 'absolute', top: '5%', left: '6%', fontSize: '0.6em', fontWeight: 900, lineHeight: 1, opacity: 0.65, pointerEvents: 'none', color: isLight ? DARK_SQ : LIGHT_SQ }}>{8 - row}</span>}
+            {dRow === 7 && <span style={{ position: 'absolute', bottom: '4%', right: '6%', fontSize: '0.6em', fontWeight: 900, lineHeight: 1, opacity: 0.65, pointerEvents: 'none', color: isLight ? DARK_SQ : LIGHT_SQ }}>{String.fromCharCode(97 + col)}</span>}
             {isLegal && !piece && <div style={{ width: '30%', height: '30%', borderRadius: '50%', background: 'rgba(0,0,0,0.22)', pointerEvents: 'none' }} />}
             {isLegal && piece  && <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', boxShadow: 'inset 0 0 0 3px rgba(0,0,0,0.25)', pointerEvents: 'none' }} />}
             {piece && (
@@ -324,15 +324,15 @@ function MoveList({ moves, currentIndex, onMoveClick }: { moves: ParsedMove[]; c
   });
 
   return (
-    <div ref={listRef} style={{ flex: 1, overflowY: 'auto', fontFamily: 'monospace', fontSize: 13, padding: '4px 0' }}>
+    <div ref={listRef} style={{ flex: 1, overflowY: 'auto', fontFamily: 'monospace', fontSize: 17, padding: '4px 0' }}>
       {rows.map(row => (
         <div key={row.num} style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 8px' }}>
-          <span style={{ width: 28, color: '#555', fontSize: 11, flexShrink: 0 }}>{row.num}.</span>
+          <span style={{ width: 28, color: '#000000', fontSize: 17, flexShrink: 0 }}>{row.num}.</span>
           {row.w && (
-            <button data-active={currentIndex === row.wi} onClick={() => onMoveClick(row.wi)} style={{ flex: 1, textAlign: 'left', padding: '3px 6px', borderRadius: 4, border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 13, fontWeight: 600, background: currentIndex === row.wi ? 'rgba(250,204,21,0.3)' : 'transparent', color: currentIndex === row.wi ? '#fbbf24' : '#e2e8f0', transition: 'background 0.15s' }}>{row.w.san}</button>
+            <button data-active={currentIndex === row.wi} onClick={() => onMoveClick(row.wi)} style={{ flex: 1, textAlign: 'left', padding: '3px 6px', borderRadius: 4, border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 17, fontWeight: 900, background: currentIndex === row.wi ? 'rgba(250,204,21,0.3)' : 'transparent', color: currentIndex === row.wi ? '#fbbf24' : '#e2e8f0', transition: 'background 0.15s' }}>{row.w.san}</button>
           )}
           {row.b ? (
-            <button data-active={currentIndex === row.bi} onClick={() => onMoveClick(row.bi!)} style={{ flex: 1, textAlign: 'left', padding: '3px 6px', borderRadius: 4, border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 13, fontWeight: 600, background: currentIndex === row.bi ? 'rgba(250,204,21,0.3)' : 'transparent', color: currentIndex === row.bi ? '#fbbf24' : '#cbd5e1', transition: 'background 0.15s' }}>{row.b.san}</button>
+            <button data-active={currentIndex === row.bi} onClick={() => onMoveClick(row.bi!)} style={{ flex: 1, textAlign: 'left', padding: '3px 6px', borderRadius: 4, border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 17, fontWeight: 900, background: currentIndex === row.bi ? 'rgba(250,204,21,0.3)' : 'transparent', color: currentIndex === row.bi ? '#fbbf24' : '#cbd5e1', transition: 'background 0.15s' }}>{row.b.san}</button>
           ) : <div style={{ flex: 1 }} />}
         </div>
       ))}
@@ -367,39 +367,39 @@ function WelcomeBanner({ onDismiss }: { onDismiss: () => void }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}><Zap style={{ width: 18, height: 18, color: '#fff' }} /></div>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#e2e8f0' }}>Analysis Board — Quick Guide</div>
-            <div style={{ fontSize: 11, color: '#7c3aed', fontWeight: 500, marginTop: 1 }}>Powered by Stockfish engine</div>
+            <div style={{ fontSize: 17, fontWeight: 900, color: '#000000' }}>Analysis Board — Quick Guide</div>
+            <div style={{ fontSize: 17, color: '#000000', fontWeight: 900, marginTop: 1 }}>Powered by Stockfish engine</div>
           </div>
-          <button onClick={onDismiss} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontSize: 18, lineHeight: 1, padding: '2px 6px', borderRadius: 6 }}>✕</button>
+          <button onClick={onDismiss} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#000000', fontSize: 18, lineHeight: 1, padding: '2px 6px', borderRadius: 6 }}>✕</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(34,255,136,0.06)', border: '1px solid rgba(34,255,136,0.18)' }}>
             <Bot style={{ width: 18, height: 18, flexShrink: 0, marginTop: 1 }} />
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#22ff88', marginBottom: 2 }}>Built-in Stockfish engine is active</div>
-              <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.55 }}>One of the world's strongest engines runs live in your browser — giving you real-time evaluation, best-move arrows, and a principal variation line.</div>
+              <div style={{ fontSize: 17, fontWeight: 900, color: '#22ff88', marginBottom: 2 }}>Built-in Stockfish engine is active</div>
+              <div style={{ fontSize: 17, color: '#000000', lineHeight: 1.55 }}>One of the world's strongest engines runs live in your browser — giving you real-time evaluation, best-move arrows, and a principal variation line.</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.18)' }}>
             <div style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>♟</div>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24', marginBottom: 2 }}>Want deeper analysis? Use Chess.com</div>
-              <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.55 }}>For full game reports with blunder / inaccuracy classification, run the analysis on <strong style={{ color: '#e2e8f0' }}>chess.com</strong>, then <strong style={{ color: '#e2e8f0' }}>download the PGN</strong> and upload it in the <strong style={{ color: '#c4b5fd' }}>Practice</strong> page to drill those lines.</div>
+              <div style={{ fontSize: 17, fontWeight: 900, color: '#fbbf24', marginBottom: 2 }}>Want deeper analysis? Use Chess.com</div>
+              <div style={{ fontSize: 17, color: '#000000', lineHeight: 1.55 }}>For full game reports with blunder / inaccuracy classification, run the analysis on <strong style={{ color: '#000000' }}>chess.com</strong>, then <strong style={{ color: '#000000' }}>download the PGN</strong> and upload it in the <strong style={{ color: '#000000' }}>Practice</strong> page to drill those lines.</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.2)' }}>
             <Clipboard style={{ width: 18, height: 18, flexShrink: 0, marginTop: 1 }} />
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd', marginBottom: 2 }}>How to use</div>
-              <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.55 }}>
-                <span style={{ color: '#c4b5fd' }}>①</span> <strong style={{ color: '#e2e8f0' }}>Free Play</strong> — move pieces, see live neon arrows.&nbsp;
-                <span style={{ color: '#c4b5fd' }}>②</span> Load Chess.com games via the panel above the board.&nbsp;
-                <span style={{ color: '#c4b5fd' }}>③</span> Navigate moves with <kbd style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 3, padding: '1px 4px', fontSize: 10 }}>← →</kbd> and save the PGN.
+              <div style={{ fontSize: 17, fontWeight: 900, color: '#000000', marginBottom: 2 }}>How to use</div>
+              <div style={{ fontSize: 17, color: '#000000', lineHeight: 1.55 }}>
+                <span style={{ color: '#000000' }}>①</span> <strong style={{ color: '#000000' }}>Free Play</strong> — move pieces, see live neon arrows.&nbsp;
+                <span style={{ color: '#000000' }}>②</span> Load Chess.com games via the panel above the board.&nbsp;
+                <span style={{ color: '#000000' }}>③</span> Navigate moves with <kbd style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 3, padding: '1px 4px', fontSize: 10 }}>← →</kbd> and save the PGN.
               </div>
             </div>
           </div>
         </div>
-        <button onClick={onDismiss} style={{ marginTop: 14, width: '100%', padding: '9px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 13, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', letterSpacing: 0.3 }}>
+        <button onClick={onDismiss} style={{ marginTop: 14, width: '100%', padding: '9px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 17, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', letterSpacing: 0.3 }}>
           Got it — Start Analysing
         </button>
       </div>
@@ -643,9 +643,9 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
   return (
     // ↓ Changed from minHeight:'100vh' to height:'100vh' + overflow:'hidden'
     //   The inner content div handles its own scrolling
-    <div style={{ height: '100vh', overflow: 'hidden', backgroundImage: 'url(/wall.jpeg)', backgroundSize: 'cover', backgroundPosition: 'center', color: '#e2e8f0', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <div style={{ height: '100vh', overflow: 'hidden', backgroundImage: 'url(/wall.jpeg)', backgroundSize: 'cover', backgroundPosition: 'center', color: '#000000', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', flexDirection: 'column', position: 'relative' }}>
       {/* Dark overlay so the UI stays readable over the wall image */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,5,25,0.78)', zIndex: 0, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,5,25,0.78)', zIndex: -1, pointerEvents: 'none' }} />
 
       {/* Welcome modal */}
       <AnimatePresence>
@@ -662,19 +662,19 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
       {/* Header — fixed height, never scrolls */}
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100, flexShrink: 0, gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 14 }}>
+          <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#000000', fontSize: 14 }}>
             <span style={{ fontSize: 18 }}>←</span> Home
           </button>
-          <button onClick={() => navigate('/practice')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 8, cursor: 'pointer', color: '#c4b5fd', fontSize: 14, padding: '4px 10px' }}>
+          <button onClick={() => navigate('/practice')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 8, cursor: 'pointer', color: '#000000', fontSize: 17, padding: '4px 10px' }}>
             <Swords style={{ width: 16, height: 16, display: 'inline-block', marginRight: 4 }} /> Practice
           </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 22 }}>♔</span>
-          <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: 0.5, color: '#c4b5fd' }}>Analysis Board</span>
+          <span style={{ fontWeight: 900, fontSize: 17, letterSpacing: 0.5, color: '#000000' }}>Analysis Board</span>
         </div>
         {/* Engine pill */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 9px', borderRadius: 20, background: engine.ready ? 'rgba(34,255,136,0.08)' : 'rgba(148,163,184,0.08)', border: `1px solid ${engine.ready ? 'rgba(34,255,136,0.28)' : 'rgba(148,163,184,0.15)'}`, fontSize: 11, color: engine.ready ? '#22ff88' : '#64748b', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: 160 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 9px', borderRadius: 20, background: engine.ready ? 'rgba(34,255,136,0.08)' : 'rgba(148,163,184,0.08)', border: `1px solid ${engine.ready ? 'rgba(34,255,136,0.28)' : 'rgba(148,163,184,0.15)'}`, fontSize: 17, color: engine.ready ? '#22ff88' : '#64748b', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: 160 }}>
           <span style={{ width: 7, height: 7, minWidth: 7, borderRadius: '50%', display: 'inline-block', background: engine.ready ? (engine.isAnalyzing ? '#facc15' : '#22ff88') : '#475569', animation: engine.isAnalyzing ? 'sfPulse 0.9s infinite' : 'none' }} />
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {engine.ready ? (engine.isAnalyzing ? `d${engine.depth}` : `SF d${engine.depth}`) : 'Loading…'}
@@ -693,14 +693,14 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
             <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)' }}>
               <div style={{ padding: '9px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(124,58,237,0.07)', borderRadius: '12px 12px 0 0' }}>
                 <span style={{ fontSize: 14 }}>♟</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', letterSpacing: 0.5 }}>CHESS.COM GAMES</span>
+                <span style={{ fontSize: 17, fontWeight: 900, color: '#000000', letterSpacing: 0.5 }}>CHESS.COM GAMES</span>
                 {games.length > 0 && (
-                  <button onClick={() => setShowGameList(g => !g)} style={{ marginLeft: 'auto', padding: '3px 9px', borderRadius: 6, border: '1px solid rgba(196,181,253,0.2)', background: 'rgba(124,58,237,0.1)', color: '#c4b5fd', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>
+                  <button onClick={() => setShowGameList(g => !g)} style={{ marginLeft: 'auto', padding: '3px 9px', borderRadius: 6, border: '1px solid rgba(196,181,253,0.2)', background: 'rgba(124,58,237,0.1)', color: '#000000', fontSize: 17, fontWeight: 900, cursor: 'pointer' }}>
                     {showGameList ? '▲ Hide' : '▼ Show'} {games.length} game{games.length !== 1 ? 's' : ''}
                   </button>
                 )}
                 {mode === 'review' && (
-                  <button onClick={() => { setMode('free'); chessRef.current.reset(); setBoard(parseFenToBoard(INITIAL_FEN)); setLastMove(null); setSelectedSquare(null); setLegalMoveSquares([]); analyzePosition(INITIAL_FEN); }} style={{ marginLeft: games.length > 0 ? 0 : 'auto', padding: '3px 9px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#94a3b8', fontSize: 10, cursor: 'pointer' }}>
+                  <button onClick={() => { setMode('free'); chessRef.current.reset(); setBoard(parseFenToBoard(INITIAL_FEN)); setLastMove(null); setSelectedSquare(null); setLegalMoveSquares([]); analyzePosition(INITIAL_FEN); }} style={{ marginLeft: games.length > 0 ? 0 : 'auto', padding: '3px 9px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#000000', fontSize: 17, cursor: 'pointer' }}>
                     ← Free Play
                   </button>
                 )}
@@ -711,14 +711,14 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
                   onChange={e => setUsernameInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && fetchGames()}
                   placeholder="Enter username…"
-                  style={{ flex: 1, minWidth: 110, padding: '6px 10px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 12, outline: 'none' }}
+                  style={{ flex: 1, minWidth: 110, padding: '6px 10px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#000000', fontSize: 17, outline: 'none' }}
                 />
-                <button onClick={fetchGames} disabled={gamesLoading || !usernameInput.trim()} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', fontSize: 12, fontWeight: 600, cursor: (gamesLoading || !usernameInput.trim()) ? 'not-allowed' : 'pointer', opacity: (gamesLoading || !usernameInput.trim()) ? 0.55 : 1, flexShrink: 0 }}>
+                <button onClick={fetchGames} disabled={gamesLoading || !usernameInput.trim()} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', fontSize: 17, fontWeight: 900, cursor: (gamesLoading || !usernameInput.trim()) ? 'not-allowed' : 'pointer', opacity: (gamesLoading || !usernameInput.trim()) ? 0.55 : 1, flexShrink: 0 }}>
                   {gamesLoading ? '…' : 'Load'}
                 </button>
-                <button onClick={downloadPgn} style={{ padding: '6px 12px', borderRadius: 7, border: '1px solid rgba(250,204,21,0.25)', background: 'rgba(250,204,21,0.08)', color: '#fbbf24', fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}><Download style={{ width: 12, height: 12, display: 'inline-block', marginRight: 3 }} />PGN</button>
+                <button onClick={downloadPgn} style={{ padding: '6px 12px', borderRadius: 7, border: '1px solid rgba(250,204,21,0.25)', background: 'rgba(250,204,21,0.08)', color: '#fbbf24', fontSize: 17, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }}><Download style={{ width: 12, height: 12, display: 'inline-block', marginRight: 3 }} />PGN</button>
               </div>
-              {gamesError && <div style={{ padding: '0 14px 10px', color: '#f87171', fontSize: 11 }}><TriangleAlert className="w-4 h-4 inline-block mr-1" />{gamesError}</div>}
+              {gamesError && <div style={{ padding: '0 14px 10px', color: '#f87171', fontSize: 14 }}><TriangleAlert className="w-4 h-4 inline-block mr-1" />{gamesError}</div>}
             </div>
 
             {/* Board row */}
@@ -739,33 +739,33 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
             {mode === 'review' && (
               <div style={{ display: 'flex', gap: 6 }}>
                 {(['first','prev','next','last'] as const).map(d => (
-                  <button key={d} onClick={() => navDir(d)} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', fontSize: 20, cursor: 'pointer', touchAction: 'manipulation' }}>
+                  <button key={d} onClick={() => navDir(d)} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#000000', fontSize: 20, cursor: 'pointer', touchAction: 'manipulation' }}>
                     {{ first: <ChevronsLeft style={{ width: 14, height: 14 }} />, prev: <ChevronLeft style={{ width: 14, height: 14 }} />, next: <ChevronRight style={{ width: 14, height: 14 }} />, last: <ChevronsRight style={{ width: 14, height: 14 }} /> }[d]}
                   </button>
                 ))}
-                <button onClick={() => setFlipped(f => !f)} style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', fontSize: 18, cursor: 'pointer', touchAction: 'manipulation' }}><FlipHorizontal2 style={{ width: 18, height: 18 }} /></button>
+                <button onClick={() => setFlipped(f => !f)} style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#000000', fontSize: 18, cursor: 'pointer', touchAction: 'manipulation' }}><FlipHorizontal2 style={{ width: 18, height: 18 }} /></button>
               </div>
             )}
 
             {/* Free play buttons */}
             {mode === 'free' && (
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={resetFreeBoard} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', fontSize: 13, fontWeight: 600, cursor: 'pointer', touchAction: 'manipulation' }}><RotateCcw style={{ width: 14, height: 14, display: 'inline-block', marginRight: 4 }} />Reset</button>
-                <button onClick={() => setFlipped(f => !f)} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', fontSize: 13, fontWeight: 600, cursor: 'pointer', touchAction: 'manipulation' }}><FlipHorizontal2 style={{ width: 14, height: 14, display: 'inline-block', marginRight: 4 }} />Flip</button>
-                <button onClick={() => analyzePosition(chessRef.current.fen())} disabled={!engine.ready} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(124,58,237,0.35)', background: engine.ready ? 'rgba(124,58,237,0.18)' : 'rgba(255,255,255,0.03)', color: engine.ready ? '#c4b5fd' : '#475569', fontSize: 13, fontWeight: 600, cursor: engine.ready ? 'pointer' : 'not-allowed', touchAction: 'manipulation' }}><Zap style={{ width: 13, height: 13, display: 'inline-block', marginRight: 3 }} />Analyze</button>
+                <button onClick={resetFreeBoard} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#000000', fontSize: 17, fontWeight: 900, cursor: 'pointer', touchAction: 'manipulation' }}><RotateCcw style={{ width: 14, height: 14, display: 'inline-block', marginRight: 4 }} />Reset</button>
+                <button onClick={() => setFlipped(f => !f)} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#000000', fontSize: 17, fontWeight: 900, cursor: 'pointer', touchAction: 'manipulation' }}><FlipHorizontal2 style={{ width: 14, height: 14, display: 'inline-block', marginRight: 4 }} />Flip</button>
+                <button onClick={() => analyzePosition(chessRef.current.fen())} disabled={!engine.ready} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(124,58,237,0.35)', background: engine.ready ? 'rgba(124,58,237,0.18)' : 'rgba(255,255,255,0.03)', color: engine.ready ? '#c4b5fd' : '#475569', fontSize: 17, fontWeight: 900, cursor: engine.ready ? 'pointer' : 'not-allowed', touchAction: 'manipulation' }}><Zap style={{ width: 13, height: 13, display: 'inline-block', marginRight: 3 }} />Analyze</button>
               </div>
             )}
 
             {/* Game info bar */}
             {mode === 'review' && currentGame && (
-              <div style={{ padding: '8px 12px', background: 'rgba(0,0,0,0.25)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12, gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ color: '#e2e8f0', fontWeight: 600 }}>♙ {currentGame.white.username} ({currentGame.white.rating ?? '?'}) <span style={{ color: '#475569', margin: '0 4px' }}>vs</span> ♟ {currentGame.black.username} ({currentGame.black.rating ?? '?'})</span>
-                <span style={{ color: '#64748b' }}>Move {Math.min(moveIndex, allMoves.length)}/{allMoves.length} <span style={{ marginLeft: 5, color: '#475569' }}>← →</span></span>
+              <div style={{ padding: '8px 12px', background: 'rgba(0,0,0,0.25)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 17, gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ color: '#000000', fontWeight: 900 }}>♙ {currentGame.white.username} ({currentGame.white.rating ?? '?'}) <span style={{ color: '#000000', margin: '0 4px' }}>vs</span> ♟ {currentGame.black.username} ({currentGame.black.rating ?? '?'})</span>
+                <span style={{ color: '#000000' }}>Move {Math.min(moveIndex, allMoves.length)}/{allMoves.length} <span style={{ marginLeft: 5, color: '#000000' }}>← →</span></span>
               </div>
             )}
 
             {/* FEN */}
-            <div style={{ padding: '6px 10px', background: 'rgba(0,0,0,0.2)', borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)', fontSize: 9, fontFamily: 'monospace', color: '#3a4a5a', wordBreak: 'break-all', lineHeight: 1.5 }}>
+            <div style={{ padding: '6px 10px', background: 'rgba(0,0,0,0.2)', borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)', fontSize: 17, fontFamily: 'monospace', color: '#3a4a5a', wordBreak: 'break-all', lineHeight: 1.5 }}>
               {currentFen}
             </div>
           </div>
@@ -777,18 +777,18 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
             {showGameList && games.length > 0 && (
               <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 12, border: '1px solid rgba(124,58,237,0.25)', display: 'flex', flexDirection: 'column', maxHeight: 340 }}>
                 <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, background: 'rgba(124,58,237,0.07)', borderRadius: '12px 12px 0 0' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd', letterSpacing: 0.5 }}>SELECT GAME</span>
-                  <button onClick={() => setShowGameList(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontSize: 16, lineHeight: 1, padding: '2px 6px' }}>✕</button>
+                  <span style={{ fontSize: 17, fontWeight: 900, color: '#000000', letterSpacing: 0.5 }}>SELECT GAME</span>
+                  <button onClick={() => setShowGameList(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#000000', fontSize: 17, lineHeight: 1, padding: '2px 6px' }}>✕</button>
                 </div>
                 <div style={{ overflowY: 'auto', padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {games.slice(0, 40).map((game, i) => (
                     <button key={i} onClick={() => loadGame(game)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.06)', background: currentGame === game ? 'rgba(124,58,237,0.22)' : 'rgba(255,255,255,0.02)', cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s', width: '100%' }}>
-                      <span style={{ fontSize: 13, flexShrink: 0 }}>{timeIcon(game.time_class)}</span>
+                      <span style={{ fontSize: 17, flexShrink: 0 }}>{timeIcon(game.time_class)}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div style={{ fontSize: 17, fontWeight: 900, color: '#000000', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {game.white.username} ({game.white.rating ?? '?'}) vs {game.black.username} ({game.black.rating ?? '?'})
                         </div>
-                        <div style={{ fontSize: 10, color: '#475569', marginTop: 1 }}>{new Date(game.end_time * 1000).toLocaleDateString()} · {game.time_class}</div>
+                        <div style={{ fontSize: 17, color: '#000000', marginTop: 1 }}>{new Date(game.end_time * 1000).toLocaleDateString()} · {game.time_class}</div>
                       </div>
                     </button>
                   ))}
@@ -800,8 +800,8 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
             {mode === 'review' && (
               <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', maxHeight: 330 }}>
                 <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd', letterSpacing: 0.5 }}>MOVES</span>
-                  <span style={{ fontSize: 10, color: '#475569' }}>click or ← →</span>
+                  <span style={{ fontSize: 17, fontWeight: 900, color: '#000000', letterSpacing: 0.5 }}>MOVES</span>
+                  <span style={{ fontSize: 17, color: '#000000' }}>click or ← →</span>
                 </div>
                 <MoveList moves={allMoves} currentIndex={moveIndex} onMoveClick={goToMove} />
               </div>
@@ -810,7 +810,7 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
             {/* Arrow legend */}
             {mode === 'review' && (
               <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 7 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: 0.5 }}>ARROWS</div>
+                <div style={{ fontSize: 17, fontWeight: 900, color: '#000000', letterSpacing: 0.5 }}>ARROWS</div>
                 {[
                   { neon: '#22ff88', label: 'Best move (engine)',    w: '3.2', w2: '1.4', wc: '0.7', gc: '#22ff88' },
                   { neon: '#ffdd00', label: 'Move played in game',  w: '2.5', w2: '1.1', wc: '0.55', gc: '#ffdd00' },
@@ -826,7 +826,7 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
                       <path d="M 3 9 Q 18 3 32 6" fill="none" stroke={neon} strokeWidth={w2} strokeOpacity="0.3" strokeLinecap="round" />
                       <path d="M 3 9 Q 18 3 32 6" fill="none" stroke={neon} strokeWidth={wc} strokeOpacity="0.95" strokeLinecap="round" markerEnd={`url(#lh-${label})`} />
                     </svg>
-                    <span style={{ fontSize: 11, color: '#94a3b8' }}>{label}</span>
+                    <span style={{ fontSize: 17, color: '#000000' }}>{label}</span>
                   </div>
                 ))}
               </div>
@@ -835,38 +835,38 @@ const timeIcon = (tc: string): JSX.Element => timeIconMap[tc] ?? <span>♟</span
             {/* Engine panel */}
             <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)' }}>
               <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd', letterSpacing: 0.5 }}>ENGINE</span>
-                {engine.isAnalyzing && <span style={{ fontSize: 10, color: '#facc15' }}>● analyzing</span>}
+                <span style={{ fontSize: 17, fontWeight: 900, color: '#000000', letterSpacing: 0.5 }}>ENGINE</span>
+                {engine.isAnalyzing && <span style={{ fontSize: 17, color: '#facc15' }}>● analyzing</span>}
               </div>
               <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  <span style={{ fontSize: 26, fontWeight: 800, fontFamily: 'monospace', color: engine.isMate ? '#f87171' : (engine.score ?? 0) >= 0 ? '#22ff88' : '#60a5fa' }}>{evalText}</span>
-                  {engine.depth > 0 && <span style={{ fontSize: 10, color: '#475569' }}>depth {engine.depth}</span>}
+                  <span style={{ fontSize: 26, fontWeight: 900, fontFamily: 'monospace', color: engine.isMate ? '#f87171' : (engine.score ?? 0) >= 0 ? '#22ff88' : '#60a5fa' }}>{evalText}</span>
+                  {engine.depth > 0 && <span style={{ fontSize: 17, color: '#000000' }}>depth {engine.depth}</span>}
                 </div>
                 {engine.bestMove && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, background: 'rgba(34,255,136,0.06)', border: '1px solid rgba(34,255,136,0.18)' }}>
                     <span style={{ fontSize: 16 }}>→</span>
                     <div>
-                      <div style={{ fontSize: 10, color: '#475569' }}>Best move</div>
-                      <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', color: '#22ff88' }}>{engine.bestMove.from} → {engine.bestMove.to}</div>
+                      <div style={{ fontSize: 17, color: '#000000' }}>Best move</div>
+                      <div style={{ fontSize: 17, fontWeight: 900, fontFamily: 'monospace', color: '#22ff88' }}>{engine.bestMove.from} → {engine.bestMove.to}</div>
                     </div>
                   </div>
                 )}
                 {engine.pv && (
-                  <div style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'monospace', padding: '6px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', wordBreak: 'break-word', lineHeight: 1.7 }}>
-                    <span style={{ color: '#475569', marginRight: 5, fontSize: 9 }}>PV</span>{engine.pv}
+                  <div style={{ fontSize: 17, color: '#000000', fontFamily: 'monospace', padding: '6px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', wordBreak: 'break-word', lineHeight: 1.7 }}>
+                    <span style={{ color: '#000000', marginRight: 5, fontSize: 9 }}>PV</span>{engine.pv}
                   </div>
                 )}
-                {!engine.ready && <div style={{ fontSize: 11, color: '#475569', textAlign: 'center', padding: '6px 0' }}>Loading Stockfish…</div>}
+                {!engine.ready && <div style={{ fontSize: 17, color: '#000000', textAlign: 'center', padding: '6px 0' }}>Loading Stockfish…</div>}
               </div>
             </div>
 
             {/* Free mode hint */}
             {mode === 'free' && (
-              <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.06)', fontSize: 11, color: '#64748b', lineHeight: 1.6 }}>
-                <div style={{ fontWeight: 700, color: '#94a3b8', marginBottom: 4 }}>FREE PLAY MODE</div>
+              <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.06)', fontSize: 17, color: '#000000', lineHeight: 1.6 }}>
+                <div style={{ fontWeight: 900, color: '#000000', marginBottom: 4 }}>FREE PLAY MODE</div>
                 Move pieces freely. The <span style={{ color: '#22ff88' }}>green neon arrow</span> shows the engine's best move.<br /><br />
-                Load Chess.com games above, or download a PGN from chess.com and upload it in the <strong style={{ color: '#c4b5fd' }}>Practice</strong> page to drill those lines.
+                Load Chess.com games above, or download a PGN from chess.com and upload it in the <strong style={{ color: '#000000' }}>Practice</strong> page to drill those lines.
               </div>
             )}
           </div>

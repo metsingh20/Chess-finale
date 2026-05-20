@@ -446,17 +446,17 @@ const Stats = () => {
         {/* Header */}
         <div className="flex items-start justify-between mb-3 sm:mb-5">
           <div className="flex-1 min-w-0 pr-3">
-            <h3 className="font-bold text-gray-900 text-base sm:text-lg mb-1 sm:mb-2 truncate leading-tight">
+            <h3 className="font-bold text-black text-base sm:text-lg mb-1 sm:mb-2 truncate leading-tight">
               {name}
             </h3>
             <div className="flex items-center gap-2">
               <MedalIcon className="w-6 h-6" style={{ color: medal.color }} />
-              <span className="text-xs text-gray-600 font-semibold bg-gray-50 px-2 py-1 rounded">
+              <span className="text-xs text-black font-semibold bg-gray-50 px-2 py-1 rounded">
                 {medal.name}
               </span>
             </div>
           </div>
-          <div className="text-xs text-gray-400 bg-gray-50 px-2.5 py-1.5 rounded-lg font-mono">
+          <div className="text-xs text-black bg-gray-50 px-2.5 py-1.5 rounded-lg font-mono">
             #{index + 1}
           </div>
         </div>
@@ -474,7 +474,7 @@ const Stats = () => {
         </div>
 
         {/* Chart Type Label */}
-        <div className="text-xs text-gray-500 mb-3 sm:mb-4 text-center font-medium uppercase tracking-wider bg-gray-100 py-1.5 rounded">
+        <div className="text-xs text-black mb-3 sm:mb-4 text-center font-medium uppercase tracking-wider bg-gray-100 py-1.5 rounded">
           {chartType === 'horizontal-bar' && '━ Horizontal Bar Chart'}
           {chartType === 'vertical-bar' && '▬ Vertical Bar Chart'}
           {chartType === 'grouped-bar' && '▬▬ Grouped Bar Chart'}
@@ -488,19 +488,19 @@ const Stats = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <div className="text-center bg-gray-50 rounded-lg p-2 sm:p-2.5">
-            <div className="text-xs text-gray-500 mb-1 font-medium">Accuracy</div>
+            <div className="text-xs text-black mb-1 font-medium">Accuracy</div>
             <div className="text-base sm:text-xl font-bold" style={{ color: medal.color }}>
               {accuracy}%
             </div>
           </div>
           <div className="text-center bg-gray-50 rounded-lg p-2 sm:p-2.5">
-            <div className="text-xs text-gray-500 mb-1 font-medium">Attempts</div>
-            <div className="text-base sm:text-xl font-bold text-gray-700">
+            <div className="text-xs text-black mb-1 font-medium">Attempts</div>
+            <div className="text-base sm:text-xl font-bold text-black">
               {stats.attempts}
             </div>
           </div>
           <div className="text-center bg-gray-50 rounded-lg p-2 sm:p-2.5">
-            <div className="text-xs text-gray-500 mb-1 font-medium">Correct</div>
+            <div className="text-xs text-black mb-1 font-medium">Correct</div>
             <div className="text-base sm:text-xl font-bold text-emerald-600">
               {stats.correct}
             </div>
@@ -564,7 +564,7 @@ const Stats = () => {
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.6 }}
-              className="text-4xl font-bold text-white mb-2"
+              className="text-4xl font-bold text-black mb-2"
             >
               Preparing Analytics
             </motion.h2>
@@ -572,7 +572,7 @@ const Stats = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.9, duration: 0.6 }}
-              className="text-xl text-purple-200"
+              className="text-xl text-black"
             >
               {selectedView === 'openings' ? 'Opening Performance Dashboard' : 'Lines Performance Dashboard'}
             </motion.p>
@@ -601,10 +601,10 @@ const Stats = () => {
           >
             <BarChart3 className="w-10 h-10 sm:w-24 sm:h-24 text-white" />
           </motion.div>
-          <h1 className="font-display text-2xl sm:text-5xl font-bold text-white mb-1 sm:mb-4">
+          <h1 className="font-display text-2xl sm:text-5xl font-bold text-black mb-1 sm:mb-4">
             Analytics Dashboard
           </h1>
-          <p className="text-sm sm:text-xl text-white/80 font-body">
+          <p className="text-sm sm:text-xl text-black font-body">
             Choose your view to explore performance metrics
           </p>
         </div>
@@ -629,13 +629,13 @@ const Stats = () => {
             className="bg-white rounded-2xl p-3 sm:p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-purple-200 group"
           >
             <div className="flex justify-start mb-2 sm:mb-4">
-              <BookOpen className="w-7 h-7 sm:w-14 sm:h-14 text-purple-600 group-hover:scale-110 transition-transform duration-300" />
+              <BookOpen className="w-7 h-7 sm:w-14 sm:h-14 text-black group-hover:scale-110 transition-transform duration-300" />
             </div>
-            <h3 className="text-sm sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 font-display">Openings Dashboard</h3>
-            <p className="hidden sm:block text-gray-600 font-body text-sm">
+            <h3 className="text-sm sm:text-2xl font-bold text-black mb-1 sm:mb-2 font-display">Openings Dashboard</h3>
+            <p className="hidden sm:block text-black font-body text-sm">
               Analyze your performance across different chess openings
             </p>
-            <div className="mt-2 sm:mt-6 flex items-center text-purple-600 font-semibold text-xs sm:text-base">
+            <div className="mt-2 sm:mt-6 flex items-center text-black font-semibold text-xs sm:text-base">
               View Analytics
               <span className="ml-1 sm:ml-2 group-hover:translate-x-2 transition-transform duration-300">→</span>
             </div>
@@ -654,13 +654,13 @@ const Stats = () => {
             className="bg-white rounded-2xl p-3 sm:p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-pink-200 group"
           >
             <div className="flex justify-start mb-2 sm:mb-4">
-              <Target className="w-7 h-7 sm:w-14 sm:h-14 text-pink-600 group-hover:scale-110 transition-transform duration-300" />
+              <Target className="w-7 h-7 sm:w-14 sm:h-14 text-black group-hover:scale-110 transition-transform duration-300" />
             </div>
-            <h3 className="text-sm sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 font-display">Lines Dashboard</h3>
-            <p className="hidden sm:block text-gray-600 font-body text-sm">
+            <h3 className="text-sm sm:text-2xl font-bold text-black mb-1 sm:mb-2 font-display">Lines Dashboard</h3>
+            <p className="hidden sm:block text-black font-body text-sm">
               Track your custom lines and training sequences
             </p>
-            <div className="mt-2 sm:mt-6 flex items-center text-pink-600 font-semibold text-xs sm:text-base">
+            <div className="mt-2 sm:mt-6 flex items-center text-black font-semibold text-xs sm:text-base">
               View Analytics
               <span className="ml-1 sm:ml-2 group-hover:translate-x-2 transition-transform duration-300">→</span>
             </div>
@@ -680,9 +680,9 @@ const Stats = () => {
         >
           <div className="bg-white rounded-2xl p-12 shadow-xl border border-gray-200 text-center">
             <div className="flex justify-center mb-4">
-              <Activity className="w-16 h-16 text-purple-600 animate-pulse" />
+              <Activity className="w-16 h-16 text-black animate-pulse" />
             </div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-3">
+            <h3 className="font-display text-2xl font-bold text-black mb-3">
               Loading Analytics...
             </h3>
           </div>
@@ -704,12 +704,12 @@ const Stats = () => {
         >
           <div className="bg-white rounded-2xl p-12 shadow-xl border border-gray-200 text-center">
             <div className="flex justify-center mb-4">
-              <BarChart3 className="w-16 h-16 text-gray-400" />
+              <BarChart3 className="w-16 h-16 text-black" />
             </div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-3">
+            <h3 className="font-display text-2xl font-bold text-black mb-3">
               No Data Available
             </h3>
-            <p className="text-gray-600 font-body mb-6">
+            <p className="text-black font-body mb-6">
               Start practicing to see your analytics dashboard come to life!
             </p>
             <button
@@ -724,7 +724,7 @@ const Stats = () => {
                 setShowCurtains(false);
                 setSelectedView('selection');
               }}
-              className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all duration-300 hover:bg-gray-300 font-body"
+              className="px-6 py-3 bg-gray-200 text-black font-semibold rounded-lg transition-all duration-300 hover:bg-gray-300 font-body"
             >
               Go Back
             </button>
@@ -747,10 +747,10 @@ const Stats = () => {
             transition={{ delay: 0.3 }}
             className="text-center mb-5 sm:mb-10"
           >
-            <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-purple-600 mb-2 sm:mb-3">
+            <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-3">
               {isOpeningsView ? 'Opening Analytics Dashboard' : 'Lines Analytics Dashboard'}
             </h1>
-            <p className="text-gray-600 font-body text-sm sm:text-lg">
+            <p className="text-black font-body text-sm sm:text-lg">
               {entries.length} items tracked • {totalAttempts} total attempts • {overallAccuracy}% overall accuracy
             </p>
           </motion.div>
@@ -767,8 +767,8 @@ const Stats = () => {
               <div className="flex justify-start mb-2 sm:mb-3">
                 <Target className="w-6 h-6 sm:w-10 sm:h-10 text-blue-600" />
               </div>
-              <div className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1">{totalAttempts}</div>
-              <div className="text-xs sm:text-sm text-gray-700 font-semibold uppercase tracking-wide">Total Attempts</div>
+              <div className="text-2xl sm:text-4xl font-bold text-black mb-1">{totalAttempts}</div>
+              <div className="text-xs sm:text-sm text-black font-semibold uppercase tracking-wide">Total Attempts</div>
             </motion.div>
 
             <motion.div
@@ -781,8 +781,8 @@ const Stats = () => {
               <div className="flex justify-start mb-2 sm:mb-3">
                 <CheckCircle2 className="w-6 h-6 sm:w-10 sm:h-10 text-emerald-600" />
               </div>
-              <div className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1">{overallAccuracy}%</div>
-              <div className="text-xs sm:text-sm text-gray-700 font-semibold uppercase tracking-wide">Overall Accuracy</div>
+              <div className="text-2xl sm:text-4xl font-bold text-black mb-1">{overallAccuracy}%</div>
+              <div className="text-xs sm:text-sm text-black font-semibold uppercase tracking-wide">Overall Accuracy</div>
             </motion.div>
 
             <motion.div
@@ -793,10 +793,10 @@ const Stats = () => {
               style={{ boxShadow: '0 8px 30px rgba(168, 85, 247, 0.2)' }}
             >
               <div className="flex justify-start mb-2 sm:mb-3">
-                <BookOpen className="w-6 h-6 sm:w-10 sm:h-10 text-purple-600" />
+                <BookOpen className="w-6 h-6 sm:w-10 sm:h-10 text-black" />
               </div>
-              <div className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1">{entries.length}</div>
-              <div className="text-xs sm:text-sm text-gray-700 font-semibold uppercase tracking-wide">
+              <div className="text-2xl sm:text-4xl font-bold text-black mb-1">{entries.length}</div>
+              <div className="text-xs sm:text-sm text-black font-semibold uppercase tracking-wide">
                 {isOpeningsView ? 'Openings' : 'Lines'} Tracked
               </div>
             </motion.div>
@@ -809,7 +809,7 @@ const Stats = () => {
             transition={{ delay: 0.8 }}
             className="mb-10"
           >
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">
+            <h2 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6 text-center">
               Individual Performance Models
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -863,11 +863,16 @@ const Stats = () => {
     <div
       className="h-screen flex flex-col transition-colors duration-500 relative overflow-hidden"
       style={{
-        background: showDashboard
-          ? '#F8FAFC'  // Solid light gray-blue
-          : '#8B5CF6'  // Solid purple
+        backgroundImage: 'url(/wall.jpeg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}
     >
+      {/* Overlay — lighter on dashboard, darker on selection so text stays readable */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-all duration-500"
+        style={{ background: showDashboard ? 'rgba(255,255,255,0.55)' : 'rgba(10,5,25,0.70)', zIndex: 0 }}
+      />
       <header className="flex-shrink-0 flex items-center justify-between p-3 sm:p-6 relative z-[70]">
 <div className="flex items-center gap-3">
   <button
@@ -882,8 +887,8 @@ const Stats = () => {
     }}
     className={`flex items-center gap-2 transition-colors duration-300 font-body text-lg ${
       showDashboard
-        ? 'text-gray-700 hover:text-gray-900'
-        : 'text-white/90 hover:text-white'
+        ? 'text-black hover:text-black'
+        : 'text-black hover:text-white'
     }`}
   >
     <span>←</span> {showDashboard ? 'Back' : 'Back to Home'}
@@ -893,8 +898,8 @@ const Stats = () => {
     onClick={() => navigate('/practice')}
     className={`flex items-center gap-2 transition-colors duration-300 font-body text-sm px-3 py-1.5 rounded-lg border ${
       showDashboard
-        ? 'text-gray-700 hover:text-gray-900 border-gray-300 hover:bg-gray-100'
-        : 'text-white/90 hover:text-white border-white/20 hover:bg-white/10'
+        ? 'text-black hover:text-black border-gray-300 hover:bg-gray-100'
+        : 'text-black hover:text-white border-white/20 hover:bg-white/10'
     }`}
   >
     <Swords className="w-4 h-4" /> Practice
@@ -903,7 +908,7 @@ const Stats = () => {
         <div className="flex items-center gap-2">
           <span className="text-3xl">♔</span>
           <span className={`font-display font-bold text-base sm:text-xl ${
-            showDashboard ? 'text-gray-900' : 'text-white'
+            showDashboard ? 'text-black' : 'text-white'
           }`}>
             Chess Analytics
           </span>
@@ -942,17 +947,17 @@ const Stats = () => {
               <div className="flex justify-center mb-4">
                 <AlertCircle className="w-16 h-16 text-red-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">
+              <h3 className="text-2xl font-bold text-black mb-3 text-center">
                 Reset {selectedView === 'openings' ? 'Openings' : 'Lines'} Statistics?
               </h3>
-              <p className="text-gray-600 mb-6 text-center">
+              <p className="text-black mb-6 text-center">
                 This will permanently delete all {selectedView === 'openings' ? 'opening' : 'line'} statistics.
                 This action cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowResetConfirm(false)}
-                  className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-all duration-300"
+                  className="flex-1 px-6 py-3 bg-gray-200 text-black font-semibold rounded-lg hover:bg-gray-300 transition-all duration-300"
                 >
                   Cancel
                 </button>
