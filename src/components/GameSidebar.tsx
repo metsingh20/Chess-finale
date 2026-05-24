@@ -1,12 +1,10 @@
-import { Upload, ClipboardPaste, X, Check, PenLine, Trash2 } from 'lucide-react';
-import React, { useState, useEffect, useRef } from 'react';
+// src/components/GameSidebar.tsx
+import { Upload, ClipboardPaste, X, Check, PenLine, Trash2, Cloud, HardDrive } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { GameData } from '@/lib/pgn-parser';
-import {
-  buildLineFingerprint,
-  getLineNote,
-  saveLineNote,
-  deleteLineNote,
-} from '@/lib/line-notes';
+import { buildLineFingerprint } from '@/lib/line-notes';
+import { useLineNotes } from '@/hooks/useLineNotes';
+import { useAuth } from '@/hooks/useAuth';
 
 interface GameSidebarProps {
   title: React.ReactNode;
@@ -29,6 +27,8 @@ export default function GameSidebar({
   onFileUpload,
   onPgnText,
 }: GameSidebarProps) {
+  const { user } = useAuth();
+
   // ── PGN paste state ────────────────────────────────────────────────────────
   const [showPasteArea, setShowPasteArea] = useState(false);
   const [pasteValue, setPasteValue] = useState('');
@@ -38,35 +38,30 @@ export default function GameSidebar({
   const [openNoteFingerprint, setOpenNoteFingerprint] = useState<string | null>(null);
   // live draft text inside the open editor
   const [draftNote, setDraftNote] = useState('');
-  // local mirror of saved notes so the UI re-renders on save/delete without
-  // having to re-read localStorage on every render
-  const [savedNotes, setSavedNotes] = useState<Record<string, string>>({});
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Populate the savedNotes mirror whenever the games list changes
-  // (e.g. after a new PGN is loaded).
+  // ── Cloud notes hook ───────────────────────────────────────────────────────
+  // Pre-compute fingerprints so we can seed the hook for guest mode.
+  const fingerprints = useMemo(
+    () => games.map((g) => buildLineFingerprint(g.moves)),
+    [games]
+  );
+
+  const { notes: savedNotes, loading: notesLoading, saveNote, deleteNote, getNote } =
+    useLineNotes(fingerprints);
+
+  // Close any open editor when the games list changes to a completely different set
   useEffect(() => {
-    const map: Record<string, string> = {};
-    for (const game of games) {
-      const fp = buildLineFingerprint(game.moves);
-      const note = getLineNote(fp);
-      if (note) map[fp] = note;
-    }
-    setSavedNotes(map);
-    // Also close any open editor that no longer belongs to the new game list
-    if (openNoteFingerprint && !map.hasOwnProperty(openNoteFingerprint)) {
-      // The fingerprint might still be valid (it just has no note yet), so
-      // only close if the fingerprint is completely absent from the new games.
-      const stillPresent = games.some(
-        (g) => buildLineFingerprint(g.moves) === openNoteFingerprint
-      );
+    if (openNoteFingerprint) {
+      const stillPresent = fingerprints.includes(openNoteFingerprint);
       if (!stillPresent) {
         setOpenNoteFingerprint(null);
         setDraftNote('');
       }
     }
-  }, [games]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fingerprints]);
 
   // Focus the textarea when the editor opens
   useEffect(() => {
@@ -91,36 +86,23 @@ export default function GameSidebar({
       setDraftNote('');
     } else {
       setOpenNoteFingerprint(fingerprint);
-      setDraftNote(getLineNote(fingerprint));
+      setDraftNote(getNote(fingerprint));
     }
   };
 
-  const handleSaveNote = (e: React.MouseEvent, fingerprint: string) => {
+  const handleSaveNote = async (e: React.MouseEvent, fingerprint: string) => {
     e.stopPropagation();
-    saveLineNote(fingerprint, draftNote);
-    setSavedNotes((prev) => {
-      const next = { ...prev };
-      if (draftNote.trim()) {
-        next[fingerprint] = draftNote.trim();
-      } else {
-        delete next[fingerprint];
-      }
-      return next;
-    });
+    // Close the editor immediately (optimistic — saveNote updates local state first)
     setOpenNoteFingerprint(null);
     setDraftNote('');
+    await saveNote(fingerprint, draftNote);
   };
 
-  const handleDeleteNote = (e: React.MouseEvent, fingerprint: string) => {
+  const handleDeleteNote = async (e: React.MouseEvent, fingerprint: string) => {
     e.stopPropagation();
-    deleteLineNote(fingerprint);
-    setSavedNotes((prev) => {
-      const next = { ...prev };
-      delete next[fingerprint];
-      return next;
-    });
     setOpenNoteFingerprint(null);
     setDraftNote('');
+    await deleteNote(fingerprint);
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -147,13 +129,29 @@ export default function GameSidebar({
         ← Back
       </button>
 
-      {/* Title */}
-      <h2
-        className="font-display text-base font-bold text-foreground mb-2"
+      {/* Title + sync badge */}
+      <div
+        className="flex items-center justify-between mb-2"
         style={{ position: 'relative', zIndex: 1, pointerEvents: 'none' }}
       >
-        {title}
-      </h2>
+        <h2 className="font-display text-base font-bold text-foreground">
+          {title}
+        </h2>
+        {/* Small icon hinting where notes are saved */}
+        <span
+          className="flex items-center gap-1 text-[10px] text-muted-foreground font-body"
+          title={user ? 'Notes saved to the cloud' : 'Notes saved locally'}
+          style={{ pointerEvents: 'auto' }}
+        >
+          {notesLoading ? (
+            <span className="animate-pulse">⟳</span>
+          ) : user ? (
+            <Cloud className="w-3 h-3" />
+          ) : (
+            <HardDrive className="w-3 h-3" />
+          )}
+        </span>
+      </div>
 
       {/* PGN upload controls */}
       {showUpload && (onFileUpload || onPgnText) && (
@@ -334,13 +332,22 @@ export default function GameSidebar({
 
                       {/* Cancel */}
                       <button
-                        onClick={(e) => { e.stopPropagation(); setOpenNoteFingerprint(null); setDraftNote(''); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenNoteFingerprint(null);
+                          setDraftNote('');
+                        }}
                         className="py-1.5 px-2 bg-muted text-muted-foreground text-[11px] rounded-md flex items-center justify-center font-body transition-colors hover:bg-surface-elevated"
                         title="Cancel"
                       >
                         <X className="w-3 h-3" />
                       </button>
                     </div>
+
+                    {/* Sync hint */}
+                    <p className="text-[9px] text-muted-foreground/50 font-body text-right">
+                      {user ? '☁ saved to your account' : '💾 saved locally'}
+                    </p>
                   </div>
                 )}
               </div>

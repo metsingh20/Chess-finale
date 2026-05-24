@@ -14,7 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      line_notes: {
+        Row: {
+          id: string
+          user_id: string
+          fingerprint: string
+          note: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          fingerprint: string
+          note: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          fingerprint?: string
+          note?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "line_notes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
