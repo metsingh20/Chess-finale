@@ -4,13 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer,
   LineChart, Line, AreaChart, Area, ComposedChart,
-  Scatter, Tooltip, Cell, CartesianGrid, ScatterChart
+  Scatter, Tooltip, Cell, CartesianGrid, ScatterChart,
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  Legend
 } from 'recharts';
 import {
   Target, CheckCircle2, BookOpen, Trophy, Star, Award,
   Medal, BookMarked, TrendingUp, Activity, BarChart3,
-  Home, RotateCcw, AlertCircle
+  Home, RotateCcw, AlertCircle, Globe2, Loader2, ArrowRight
 , Swords} from 'lucide-react';
+import { fetchChessComOpeningStats, type ChessComSummary, type OpeningStat } from '@/lib/chesscom';
 
 interface StatsEntry {
   attempts: number;
@@ -30,11 +33,18 @@ interface StatsData {
 
 const Stats = () => {
   const navigate = useNavigate();
-  const [selectedView, setSelectedView] = useState<'selection' | 'openings' | 'lines'>('selection');
+  const [selectedView, setSelectedView] = useState<'selection' | 'openings' | 'lines' | 'chesscom'>('selection');
   const [showCurtains, setShowCurtains] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  // chess.com insights state
+  const [showChessComInput, setShowChessComInput] = useState(false);
+  const [chessComUsername, setChessComUsername] = useState('');
+  const [chessComLoading, setChessComLoading] = useState(false);
+  const [chessComError, setChessComError] = useState<string | null>(null);
+  const [chessComSummary, setChessComSummary] = useState<ChessComSummary | null>(null);
 
   // COMPLETELY LOCK SCROLLING - No black space
   useEffect(() => {
@@ -109,6 +119,30 @@ const Stats = () => {
       setShowCurtains(false);
       setSelectedView('selection');
     }, 500);
+  };
+
+  const handleAnalyzeChessCom = async () => {
+    if (!chessComUsername.trim()) {
+      setChessComError('Enter a chess.com username first.');
+      return;
+    }
+    setChessComLoading(true);
+    setChessComError(null);
+    try {
+      const summary = await fetchChessComOpeningStats(chessComUsername);
+      setChessComSummary(summary);
+      setShowChessComInput(false);
+      setShowCurtains(true);
+    } catch (err) {
+      setChessComError(err instanceof Error ? err.message : 'Something went wrong fetching your games.');
+    } finally {
+      setChessComLoading(false);
+    }
+  };
+
+  const openingWinRate = (o: OpeningStat): number => {
+    if (o.games === 0) return 0;
+    return Math.round((o.wins / o.games) * 100);
   };
 
   const getMedalForStats = (accuracy: number, attempts: number) => {
@@ -574,7 +608,7 @@ const Stats = () => {
               transition={{ delay: 0.9, duration: 0.6 }}
               className="text-xl text-black"
             >
-              {selectedView === 'openings' ? 'Opening Performance Dashboard' : 'Lines Performance Dashboard'}
+              {selectedView === 'openings' ? 'Opening Performance Dashboard' : selectedView === 'lines' ? 'Lines Performance Dashboard' : 'Chess.com Opening Insights'}
             </motion.p>
           </div>
         </motion.div>
@@ -615,7 +649,7 @@ const Stats = () => {
           layout on phones where the second card was cut off by the locked
           viewport height.
         */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-6">
           <motion.button
             initial={{ x: -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -662,6 +696,32 @@ const Stats = () => {
             </p>
             <div className="mt-2 sm:mt-6 flex items-center text-black font-semibold text-xs sm:text-base">
               View Analytics
+              <span className="ml-1 sm:ml-2 group-hover:translate-x-2 transition-transform duration-300">→</span>
+            </div>
+          </motion.button>
+
+          <motion.button
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            whileHover={{ scale: 1.05, y: -10 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              setSelectedView('chesscom');
+              setChessComError(null);
+              setShowChessComInput(true);
+            }}
+            className="bg-white rounded-2xl p-3 sm:p-8 text-left hover:shadow-2xl transition-all duration-300 border-2 border-emerald-200 group"
+          >
+            <div className="flex justify-start mb-2 sm:mb-4">
+              <Globe2 className="w-7 h-7 sm:w-14 sm:h-14 text-black group-hover:scale-110 transition-transform duration-300" />
+            </div>
+            <h3 className="text-sm sm:text-2xl font-bold text-black mb-1 sm:mb-2 font-display">Chess.com Insights</h3>
+            <p className="hidden sm:block text-black font-body text-sm">
+              See your real opening repertoire and win rate from your chess.com games
+            </p>
+            <div className="mt-2 sm:mt-6 flex items-center text-black font-semibold text-xs sm:text-base">
+              Connect
               <span className="ml-1 sm:ml-2 group-hover:translate-x-2 transition-transform duration-300">→</span>
             </div>
           </motion.button>
@@ -859,6 +919,298 @@ const Stats = () => {
     );
   };
 
+  // ============ CHESS.COM INSIGHTS ============
+
+  const renderChessComInput = () => {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-md w-full mx-auto px-4"
+      >
+        <div className="bg-white rounded-2xl p-6 sm:p-10 shadow-2xl border border-gray-200">
+          <div className="flex justify-center mb-4">
+            <Globe2 className="w-12 h-12 sm:w-16 sm:h-16 text-emerald-600" />
+          </div>
+          <h2 className="font-display text-xl sm:text-2xl font-bold text-black mb-2 text-center">
+            Chess.com Insights
+          </h2>
+          <p className="text-black/70 font-body text-sm text-center mb-6">
+            Enter your public chess.com username. We'll pull your recent games
+            and chart your opening repertoire — no password needed.
+          </p>
+
+          <label className="block text-xs font-semibold uppercase tracking-wide text-black/60 mb-1.5">
+            Chess.com username
+          </label>
+          <div className="flex gap-2 mb-3">
+            <input
+              type="text"
+              value={chessComUsername}
+              onChange={(e) => setChessComUsername(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !chessComLoading) handleAnalyzeChessCom(); }}
+              placeholder="e.g. hikaru"
+              autoFocus
+              className="flex-1 px-4 py-3 rounded-xl border border-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-emerald-500 font-body"
+            />
+          </div>
+
+          {chessComError && (
+            <div className="flex items-start gap-2 text-red-600 text-sm mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
+              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>{chessComError}</span>
+            </div>
+          )}
+
+          <button
+            onClick={handleAnalyzeChessCom}
+            disabled={chessComLoading}
+            className="w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl transition-all duration-300 hover:bg-emerald-700 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed font-body flex items-center justify-center gap-2"
+          >
+            {chessComLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Fetching your games...
+              </>
+            ) : (
+              <>
+                Analyze My Games
+                <ArrowRight className="w-5 h-5" />
+              </>
+            )}
+          </button>
+
+          <p className="text-black/40 text-xs text-center mt-4">
+            Uses chess.com's public game archive for this account.
+          </p>
+        </div>
+      </motion.div>
+    );
+  };
+
+  const OPENING_COLORS = ['#10B981', '#A855F7', '#F59E0B', '#3B82F6', '#EF4444', '#EC4899', '#14B8A6', '#F97316'];
+
+  const renderChessComDashboard = () => {
+    if (!chessComSummary) return null;
+    const { username, totalGames, openings, monthsScanned } = chessComSummary;
+
+    const totalWins = openings.reduce((sum, o) => sum + o.wins, 0);
+    const totalLosses = openings.reduce((sum, o) => sum + o.losses, 0);
+    const totalDraws = openings.reduce((sum, o) => sum + o.draws, 0);
+    const overallWinRate = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
+
+    const TOP_N = 10;
+    const topOpenings = openings.slice(0, TOP_N);
+    const remainingCount = openings.length - topOpenings.length;
+
+    const radarData = topOpenings.map((o) => ({
+      move: o.move,
+      winRate: openingWinRate(o),
+      games: o.games,
+    }));
+
+    return (
+      <div className="w-full h-full overflow-y-auto">
+        <div className="w-full mx-auto px-3 sm:px-6 py-4 sm:py-8 max-w-7xl">
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-center mb-5 sm:mb-10"
+          >
+            <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-3">
+              {username}'s Opening Wheel
+            </h1>
+            <p className="text-black font-body text-sm sm:text-lg">
+              {totalGames} games across {monthsScanned} recent months • {openings.length} distinct openings • {overallWinRate}% overall win rate
+            </p>
+          </motion.div>
+
+          {/* Summary Cards */}
+          <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-10">
+            <motion.div
+              initial={{ x: -300, opacity: 0, rotate: -15 }}
+              animate={{ x: 0, opacity: 1, rotate: 0 }}
+              transition={{ delay: 0.4, duration: 0.4, type: "spring", stiffness: 120 }}
+              className="bg-blue-100 rounded-2xl p-3 sm:p-6 border border-blue-200"
+              style={{ boxShadow: '0 8px 30px rgba(59, 130, 246, 0.2)' }}
+            >
+              <div className="flex justify-start mb-2 sm:mb-3">
+                <Target className="w-6 h-6 sm:w-10 sm:h-10 text-blue-600" />
+              </div>
+              <div className="text-2xl sm:text-4xl font-bold text-black mb-1">{totalGames}</div>
+              <div className="text-xs sm:text-sm text-black font-semibold uppercase tracking-wide">Games Analyzed</div>
+            </motion.div>
+
+            <motion.div
+              initial={{ y: -300, opacity: 0, scale: 0.7 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, duration: 0.4, type: "spring", stiffness: 120 }}
+              className="bg-emerald-100 rounded-2xl p-3 sm:p-6 border border-emerald-200"
+              style={{ boxShadow: '0 8px 30px rgba(16, 185, 129, 0.2)' }}
+            >
+              <div className="flex justify-start mb-2 sm:mb-3">
+                <CheckCircle2 className="w-6 h-6 sm:w-10 sm:h-10 text-emerald-600" />
+              </div>
+              <div className="text-2xl sm:text-4xl font-bold text-black mb-1">{overallWinRate}%</div>
+              <div className="text-xs sm:text-sm text-black font-semibold uppercase tracking-wide">Overall Win Rate</div>
+            </motion.div>
+
+            <motion.div
+              initial={{ x: 300, opacity: 0, rotate: 15 }}
+              animate={{ x: 0, opacity: 1, rotate: 0 }}
+              transition={{ delay: 0.6, duration: 1.0, type: "spring", stiffness: 60 }}
+              className="bg-purple-100 rounded-2xl p-3 sm:p-6 border border-purple-200"
+              style={{ boxShadow: '0 8px 30px rgba(168, 85, 247, 0.2)' }}
+            >
+              <div className="flex justify-start mb-2 sm:mb-3">
+                <BookOpen className="w-6 h-6 sm:w-10 sm:h-10 text-black" />
+              </div>
+              <div className="text-2xl sm:text-4xl font-bold text-black mb-1">{openings.length}</div>
+              <div className="text-xs sm:text-sm text-black font-semibold uppercase tracking-wide">
+                Openings Tracked
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Radial / circular opening chart */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8 }}
+            className="bg-white rounded-2xl p-4 sm:p-8 border border-gray-200 mb-8 sm:mb-10"
+            style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+          >
+            <h2 className="text-lg sm:text-2xl font-bold text-black mb-1 text-center">
+              Opening Win Rate Wheel
+            </h2>
+            <p className="text-black/60 font-body text-xs sm:text-sm text-center mb-2">
+              Your most-played first moves around the circumference — distance from center is win rate
+              {remainingCount > 0 ? ` (top ${TOP_N} by games played)` : ''}
+            </p>
+            <ResponsiveContainer width="100%" height={420}>
+              <RadarChart data={radarData} outerRadius="75%">
+                <PolarGrid stroke="#E5E7EB" />
+                <PolarAngleAxis
+                  dataKey="move"
+                  tick={{ fill: '#111827', fontSize: 13, fontWeight: 600 }}
+                />
+                <PolarRadiusAxis
+                  angle={90}
+                  domain={[0, 100]}
+                  tick={{ fill: '#9CA3AF', fontSize: 10 }}
+                  tickFormatter={(v) => `${v}%`}
+                />
+                <Radar
+                  name="Win rate"
+                  dataKey="winRate"
+                  stroke="#10B981"
+                  fill="#10B981"
+                  fillOpacity={0.35}
+                  strokeWidth={2.5}
+                  animationDuration={1500}
+                  dot={{ r: 4, fill: '#10B981' }}
+                />
+                <Tooltip
+                  formatter={(value: number, name: string, props: any) => {
+                    const o = topOpenings.find((x) => x.move === props.payload.move);
+                    if (!o) return [`${value}%`, 'Win rate'];
+                    return [`${value}% (${o.wins}W ${o.losses}L ${o.draws}D over ${o.games} games)`, props.payload.move];
+                  }}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </motion.div>
+
+          {/* Full opening breakdown table */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.0 }}
+            className="mb-10"
+          >
+            <h2 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6 text-center">
+              Every Opening You've Played
+            </h2>
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+              <div className="grid grid-cols-5 gap-2 px-4 sm:px-6 py-3 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-black/60">
+                <div>Opening Move</div>
+                <div className="text-center">Games</div>
+                <div className="text-center">W / L / D</div>
+                <div className="text-center">Win Rate</div>
+                <div className="text-center">&nbsp;</div>
+              </div>
+              {openings.map((o, i) => {
+                const wr = openingWinRate(o);
+                const color = OPENING_COLORS[i % OPENING_COLORS.length];
+                return (
+                  <div
+                    key={o.move}
+                    className="grid grid-cols-5 gap-2 px-4 sm:px-6 py-3 border-t border-gray-100 items-center"
+                  >
+                    <div className="font-mono font-bold text-black">{o.move}</div>
+                    <div className="text-center text-black">{o.games}</div>
+                    <div className="text-center text-black text-sm">
+                      <span className="text-emerald-600 font-semibold">{o.wins}</span>
+                      {' / '}
+                      <span className="text-red-500 font-semibold">{o.losses}</span>
+                      {' / '}
+                      <span className="text-gray-500 font-semibold">{o.draws}</span>
+                    </div>
+                    <div className="text-center font-bold" style={{ color }}>{wr}%</div>
+                    <div className="px-2">
+                      <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${wr}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* Action Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+            className="text-center mt-8 sm:mt-12 pb-8 sm:pb-12"
+          >
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+              <button
+                onClick={() => {
+                  setShowDashboard(false);
+                  setShowCurtains(false);
+                  setSelectedView('selection');
+                }}
+                className="w-full sm:w-auto px-6 sm:px-10 py-3 sm:py-4 bg-gray-800 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:bg-gray-900 font-body flex items-center justify-center gap-2"
+              >
+                <Home className="w-5 h-5" />
+                Back to Selection
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowDashboard(false);
+                  setShowCurtains(false);
+                  setChessComSummary(null);
+                  setChessComError(null);
+                  setShowChessComInput(true);
+                }}
+                className="w-full sm:w-auto px-6 sm:px-10 py-3 sm:py-4 bg-emerald-600 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:bg-emerald-700 font-body flex items-center justify-center gap-2"
+              >
+                <RotateCcw className="w-5 h-5" />
+                Try Another Username
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       className="h-screen flex flex-col transition-colors duration-500 relative overflow-hidden"
@@ -871,33 +1223,35 @@ const Stats = () => {
       {/* Overlay — lighter on dashboard, darker on selection so text stays readable */}
       <div
         className="absolute inset-0 pointer-events-none transition-all duration-500"
-        style={{ background: showDashboard ? 'rgba(255,255,255,0.55)' : 'rgba(10,5,25,0.70)', zIndex: 0 }}
+        style={{ background: (showDashboard || showChessComInput) ? 'rgba(255,255,255,0.55)' : 'rgba(10,5,25,0.70)', zIndex: 0 }}
       />
       <header className="flex-shrink-0 flex items-center justify-between p-3 sm:p-6 relative z-[70]">
 <div className="flex items-center gap-3">
   <button
     onClick={() => {
-      if (showDashboard) {
+      if (showDashboard || showChessComInput) {
         setShowDashboard(false);
         setShowCurtains(false);
+        setShowChessComInput(false);
+        setChessComError(null);
         setSelectedView('selection');
       } else {
         navigate('/');
       }
     }}
     className={`flex items-center gap-2 transition-colors duration-300 font-body text-lg ${
-      showDashboard
+      showDashboard || showChessComInput
         ? 'text-black hover:text-black'
         : 'text-black hover:text-white'
     }`}
   >
-    <span>←</span> {showDashboard ? 'Back' : 'Back to Home'}
+    <span>←</span> {showDashboard || showChessComInput ? 'Back' : 'Back to Home'}
   </button>
 
   <button
     onClick={() => navigate('/practice')}
     className={`flex items-center gap-2 transition-colors duration-300 font-body text-sm px-3 py-1.5 rounded-lg border ${
-      showDashboard
+      showDashboard || showChessComInput
         ? 'text-black hover:text-black border-gray-300 hover:bg-gray-100'
         : 'text-black hover:text-white border-white/20 hover:bg-white/10'
     }`}
@@ -908,7 +1262,7 @@ const Stats = () => {
         <div className="flex items-center gap-2">
           <span className="text-3xl">♔</span>
           <span className={`font-display font-bold text-base sm:text-xl ${
-            showDashboard ? 'text-black' : 'text-white'
+            showDashboard || showChessComInput ? 'text-black' : 'text-white'
           }`}>
             Chess Analytics
           </span>
@@ -918,7 +1272,9 @@ const Stats = () => {
       <main className="flex-1 flex items-center justify-center overflow-hidden">
         <AnimatePresence mode="wait">
           {selectedView === 'selection' && !showCurtains && renderSelectionScreen()}
-          {showDashboard && renderDashboard()}
+          {selectedView === 'chesscom' && showChessComInput && renderChessComInput()}
+          {showDashboard && selectedView !== 'chesscom' && renderDashboard()}
+          {showDashboard && selectedView === 'chesscom' && renderChessComDashboard()}
         </AnimatePresence>
       </main>
 
