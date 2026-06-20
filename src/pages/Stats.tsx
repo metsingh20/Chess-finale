@@ -1005,11 +1005,29 @@ const Stats = () => {
     const topOpenings = openings.slice(0, TOP_N);
     const remainingCount = openings.length - topOpenings.length;
 
-    const radarData = topOpenings.map((o) => ({
-      move: o.move,
-      winRate: openingWinRate(o),
-      games: o.games,
-    }));
+    // A radar chart needs at least 3 axes to read as a "wheel" — with fewer
+    // real openings, Recharts' polygon grid degenerates to a flat spoke or
+    // a line with no visible ring. Pad with neutral placeholder spokes so
+    // there's always a real shape, but keep them visually/semantically
+    // distinct (no label, excluded from the tooltip's "real" lookup).
+    const MIN_SPOKES = 3;
+    const paddingNeeded = Math.max(0, MIN_SPOKES - topOpenings.length);
+    const radarData = [
+      ...topOpenings.map((o) => ({
+        move: o.move,
+        winRate: openingWinRate(o),
+        games: o.games,
+        isPlaceholder: false,
+      })),
+      ...Array.from({ length: paddingNeeded }, (_, i) => ({
+        move: '',
+        winRate: 0,
+        games: 0,
+        isPlaceholder: true,
+        key: `pad-${i}`,
+      })),
+    ];
+    const sparseData = topOpenings.length < MIN_SPOKES;
 
     return (
       <div className="w-full h-full overflow-y-auto">
@@ -1090,12 +1108,19 @@ const Stats = () => {
               Your most-played first moves around the circumference — distance from center is win rate
               {remainingCount > 0 ? ` (top ${TOP_N} by games played)` : ''}
             </p>
-            <ResponsiveContainer width="100%" height={420}>
-              <RadarChart data={radarData} outerRadius="75%">
-                <PolarGrid stroke="#E5E7EB" />
+            {sparseData && (
+              <p className="text-amber-600 font-body text-xs text-center mb-2">
+                Only {topOpenings.length} opening{topOpenings.length === 1 ? '' : 's'} found in the scanned games —
+                play a few more for a fuller wheel. Empty spokes below are placeholders, not real data.
+              </p>
+            )}
+            <ResponsiveContainer key={radarData.length} width="100%" height={420} minWidth={280}>
+              <RadarChart data={radarData} outerRadius="75%" cx="50%" cy="50%">
+                <PolarGrid stroke="#E5E7EB" gridType="circle" />
                 <PolarAngleAxis
                   dataKey="move"
                   tick={{ fill: '#111827', fontSize: 13, fontWeight: 600 }}
+                  tickFormatter={(value: string) => value || ''}
                 />
                 <PolarRadiusAxis
                   angle={90}
@@ -1111,13 +1136,27 @@ const Stats = () => {
                   fillOpacity={0.35}
                   strokeWidth={2.5}
                   animationDuration={1500}
-                  dot={{ r: 4, fill: '#10B981' }}
+                  dot={(dotProps: any) => {
+                    const { cx, cy, payload, key } = dotProps;
+                    if (payload?.isPlaceholder) return <g key={key} />;
+                    return <circle key={key} cx={cx} cy={cy} r={4} fill="#10B981" />;
+                  }}
                 />
                 <Tooltip
-                  formatter={(value: number, name: string, props: any) => {
-                    const o = topOpenings.find((x) => x.move === props.payload.move);
-                    if (!o) return [`${value}%`, 'Win rate'];
-                    return [`${value}% (${o.wins}W ${o.losses}L ${o.draws}D over ${o.games} games)`, props.payload.move];
+                  content={({ active, payload }: any) => {
+                    if (!active || !payload || !payload.length) return null;
+                    const point = payload[0]?.payload;
+                    if (!point || point.isPlaceholder) return null;
+                    const o = topOpenings.find((x) => x.move === point.move);
+                    return (
+                      <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs">
+                        <div className="font-bold text-black mb-1">{point.move}</div>
+                        <div className="text-black/70">
+                          {point.winRate}% win rate
+                          {o ? ` (${o.wins}W ${o.losses}L ${o.draws}D over ${o.games} games)` : ''}
+                        </div>
+                      </div>
+                    );
                   }}
                 />
               </RadarChart>
