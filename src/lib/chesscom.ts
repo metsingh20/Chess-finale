@@ -41,6 +41,8 @@ function classifyResult(result: string | undefined): 'win' | 'loss' | 'draw' {
   return 'loss';
 }
 
+const SAN_MOVE_RE = /^(O-O-O|O-O|[KQRNB]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?[+#]?)$/;
+
 function normalizeMove(move: string): string {
   return move.replace(/[+#!?]+$/g, '');
 }
@@ -51,8 +53,16 @@ function normalizeMove(move: string): string {
 function extractOpeningMove(pgn: string, isWhite: boolean): string | null {
   if (!pgn) return null;
 
-  const headerEnd = pgn.lastIndexOf(']');
-  const movetext = headerEnd >= 0 ? pgn.slice(headerEnd + 1) : pgn;
+  // PGN headers are lines of the exact form `[Tag "Value"]`. We can't just
+  // find the LAST "]" in the whole string to locate where headers end —
+  // chess.com's inline clock comments in the movetext (e.g. "{[%clk
+  // 0:02:58]}") also contain "]", so that would slice into the middle of
+  // the movetext instead of skipping past the header block. Filtering out
+  // whole header lines is robust regardless of what's inside the movetext.
+  const movetext = pgn
+    .split('\n')
+    .filter((line) => !/^\s*\[.*\]\s*$/.test(line))
+    .join(' ');
 
   const cleaned = movetext
     .replace(/\{[^}]*\}/g, '') // strip {clock/eval} annotations
@@ -64,6 +74,7 @@ function extractOpeningMove(pgn: string, isWhite: boolean): string | null {
   for (const token of tokens) {
     if (/^\d+\.+$/.test(token)) continue; // move numbers like "1." or "1..."
     if (token === '*' || token === '1-0' || token === '0-1' || token === '1/2-1/2') continue;
+    if (!SAN_MOVE_RE.test(token)) continue; // skip anything that isn't a real SAN move
     sanMoves.push(token);
   }
 
