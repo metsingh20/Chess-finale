@@ -72,7 +72,10 @@ function extractOpeningMove(pgn: string, isWhite: boolean): string | null {
 }
 
 async function fetchJson(url: string) {
-  const res = await fetch(url);
+  // Cache-bust + disable HTTP caching so we never silently reuse a stale
+  // response across different usernames.
+  const bustUrl = url + (url.includes('?') ? '&' : '?') + `_=${Date.now()}`;
+  const res = await fetch(bustUrl, { cache: 'no-store' });
   if (!res.ok) {
     if (res.status === 404) return null;
     throw new Error(`chess.com request failed (${res.status})`);
@@ -85,6 +88,21 @@ export async function fetchChessComOpeningStats(rawUsername: string): Promise<Ch
   if (!username) throw new Error('Enter a chess.com username.');
   const uname = username.toLowerCase();
 
+  // Verify the account actually exists AND that the response really
+  // corresponds to the requested username (guards against a stale/cached
+  // or mocked response silently being reused across different lookups).
+  const profile = await fetchJson(`https://api.chess.com/pub/player/${uname}`);
+  if (!profile) {
+    throw new Error(`No chess.com account found for "${username}".`);
+  }
+  if (typeof profile.username !== 'string' || profile.username.toLowerCase() !== uname) {
+    console.error('chess.com profile mismatch', { requested: uname, got: profile.username });
+    throw new Error(
+      `Got an unexpected response while looking up "${username}" — please try again. ` +
+      `(If this keeps happening, check the browser console/network tab for blocked requests to api.chess.com.)`
+    );
+  }
+
   const archivesData = await fetchJson(`https://api.chess.com/pub/player/${uname}/games/archives`);
   if (!archivesData) {
     throw new Error(`No chess.com account found for "${username}".`);
@@ -95,7 +113,15 @@ export async function fetchChessComOpeningStats(rawUsername: string): Promise<Ch
     throw new Error(`${username} doesn't have any games on record yet.`);
   }
 
+  // Sanity-check that the archive URLs actually belong to this user.
+  if (archiveUrls.length > 0 && !archiveUrls[0].toLowerCase().includes(`/${uname}/`)) {
+    console.error('chess.com archive URL mismatch', { requested: uname, sample: archiveUrls[0] });
+    throw new Error(`Got mismatched data while looking up "${username}" — please try again.`);
+  }
+
   const recentArchives = archiveUrls.slice(-MAX_MONTHS);
+
+  console.debug('[chesscom] fetching', { username: uname, monthsRequested: recentArchives.length });
 
   const archiveResults = await Promise.all(
     recentArchives.map((url) => fetchJson(url).catch(() => null))
@@ -148,6 +174,8 @@ export async function fetchChessComOpeningStats(rawUsername: string): Promise<Ch
 
   const openingsWhite = Array.from(openingMapWhite.values()).sort((a, b) => b.games - a.games);
   const openingsBlack = Array.from(openingMapBlack.values()).sort((a, b) => b.games - a.games);
+
+  console.debug('[chesscom] result', { username: uname, totalGames, gamesAsWhite, gamesAsBlack });
 
   return {
     username,

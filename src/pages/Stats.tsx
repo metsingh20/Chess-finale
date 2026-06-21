@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -45,6 +45,7 @@ const Stats = () => {
   const [chessComLoading, setChessComLoading] = useState(false);
   const [chessComError, setChessComError] = useState<string | null>(null);
   const [chessComSummary, setChessComSummary] = useState<ChessComSummary | null>(null);
+  const chessComRequestId = useRef(0);
 
   // COMPLETELY LOCK SCROLLING - No black space
   useEffect(() => {
@@ -122,21 +123,27 @@ const Stats = () => {
   };
 
   const handleAnalyzeChessCom = async () => {
-    if (!chessComUsername.trim()) {
+    const requestedUsername = chessComUsername.trim();
+    if (!requestedUsername) {
       setChessComError('Enter a chess.com username first.');
       return;
     }
+    const requestId = ++chessComRequestId.current;
     setChessComLoading(true);
     setChessComError(null);
     try {
-      const summary = await fetchChessComOpeningStats(chessComUsername);
+      const summary = await fetchChessComOpeningStats(requestedUsername);
+      // Ignore this result if a newer lookup has started since — prevents
+      // a slow/stale request from overwriting fresher data.
+      if (requestId !== chessComRequestId.current) return;
       setChessComSummary(summary);
       setShowChessComInput(false);
       setShowCurtains(true);
     } catch (err) {
+      if (requestId !== chessComRequestId.current) return;
       setChessComError(err instanceof Error ? err.message : 'Something went wrong fetching your games.');
     } finally {
-      setChessComLoading(false);
+      if (requestId === chessComRequestId.current) setChessComLoading(false);
     }
   };
 
@@ -953,7 +960,8 @@ const Stats = () => {
               onKeyDown={(e) => { if (e.key === 'Enter' && !chessComLoading) handleAnalyzeChessCom(); }}
               placeholder="e.g. hikaru"
               autoFocus
-              className="flex-1 px-4 py-3 rounded-xl border border-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-emerald-500 font-body"
+              disabled={chessComLoading}
+              className="flex-1 px-4 py-3 rounded-xl border border-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-emerald-500 font-body disabled:opacity-60"
             />
           </div>
 
