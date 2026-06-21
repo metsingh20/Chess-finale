@@ -5,6 +5,7 @@
 
 export interface OpeningStat {
   move: string; // the player's first move, e.g. "e4" or, as Black, "d5"
+  color: 'white' | 'black';
   games: number;
   wins: number;
   losses: number;
@@ -15,7 +16,10 @@ export interface ChessComSummary {
   username: string;
   totalGames: number;
   monthsScanned: number;
-  openings: OpeningStat[];
+  gamesAsWhite: number;
+  gamesAsBlack: number;
+  openingsWhite: OpeningStat[];
+  openingsBlack: OpeningStat[];
 }
 
 const MAX_MONTHS = 12; // most recent N months of archives, to keep this fast
@@ -97,8 +101,11 @@ export async function fetchChessComOpeningStats(rawUsername: string): Promise<Ch
     recentArchives.map((url) => fetchJson(url).catch(() => null))
   );
 
-  const openingMap = new Map<string, OpeningStat>();
+  const openingMapWhite = new Map<string, OpeningStat>();
+  const openingMapBlack = new Map<string, OpeningStat>();
   let totalGames = 0;
+  let gamesAsWhite = 0;
+  let gamesAsBlack = 0;
 
   for (const archive of archiveResults) {
     if (!archive || !Array.isArray(archive.games)) continue;
@@ -119,14 +126,18 @@ export async function fetchChessComOpeningStats(rawUsername: string): Promise<Ch
 
       const result = isWhite ? white.result : black.result;
       const outcome = classifyResult(result);
+      const color: 'white' | 'black' = isWhite ? 'white' : 'black';
+      const map = isWhite ? openingMapWhite : openingMapBlack;
 
-      const entry = openingMap.get(move) || { move, games: 0, wins: 0, losses: 0, draws: 0 };
+      const entry = map.get(move) || { move, color, games: 0, wins: 0, losses: 0, draws: 0 };
       entry.games += 1;
       if (outcome === 'win') entry.wins += 1;
       else if (outcome === 'loss') entry.losses += 1;
       else entry.draws += 1;
-      openingMap.set(move, entry);
+      map.set(move, entry);
 
+      if (isWhite) gamesAsWhite += 1;
+      else gamesAsBlack += 1;
       totalGames += 1;
     }
   }
@@ -135,12 +146,16 @@ export async function fetchChessComOpeningStats(rawUsername: string): Promise<Ch
     throw new Error(`Couldn't find any standard chess games for ${username} in recent months.`);
   }
 
-  const openings = Array.from(openingMap.values()).sort((a, b) => b.games - a.games);
+  const openingsWhite = Array.from(openingMapWhite.values()).sort((a, b) => b.games - a.games);
+  const openingsBlack = Array.from(openingMapBlack.values()).sort((a, b) => b.games - a.games);
 
   return {
     username,
     totalGames,
     monthsScanned: recentArchives.length,
-    openings,
+    gamesAsWhite,
+    gamesAsBlack,
+    openingsWhite,
+    openingsBlack,
   };
 }

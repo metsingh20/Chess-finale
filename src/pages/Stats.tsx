@@ -992,28 +992,52 @@ const Stats = () => {
 
   const OPENING_COLORS = ['#10B981', '#A855F7', '#F59E0B', '#3B82F6', '#EF4444', '#EC4899', '#14B8A6', '#F97316'];
 
-  const renderChessComDashboard = () => {
-    if (!chessComSummary) return null;
-    const { username, totalGames, openings, monthsScanned } = chessComSummary;
+  const smoothClosedPath = (points: { x: number; y: number }[]): string => {
+    const n = points.length;
+    if (n === 0) return '';
+    if (n === 1) return `M${points[0].x},${points[0].y}`;
+    if (n === 2) return `M${points[0].x},${points[0].y} L${points[1].x},${points[1].y}`;
+    let d = `M${points[0].x},${points[0].y} `;
+    for (let i = 0; i < n; i++) {
+      const p0 = points[(i - 1 + n) % n];
+      const p1 = points[i];
+      const p2 = points[(i + 1) % n];
+      const p3 = points[(i + 2) % n];
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      d += `C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y} `;
+    }
+    return `${d}Z`;
+  };
 
-    const totalWins = openings.reduce((sum, o) => sum + o.wins, 0);
-    const totalLosses = openings.reduce((sum, o) => sum + o.losses, 0);
-    const totalDraws = openings.reduce((sum, o) => sum + o.draws, 0);
-    const overallWinRate = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
+  // Custom Radar "shape" — renders a smooth Catmull-Rom blob through the
+  // polar points instead of Recharts' default straight-edged polygon, to
+  // match a hand-drawn opening wheel look.
+  const SmoothBlobShape = (shapeProps: any) => {
+    const { points, stroke, fill, fillOpacity, strokeWidth } = shapeProps;
+    if (!points || points.length === 0) return <g />;
+    const path = smoothClosedPath(points.map((p: any) => ({ x: p.x, y: p.y })));
+    return (
+      <path
+        d={path}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        strokeLinejoin="round"
+        fill={fill}
+        fillOpacity={fillOpacity}
+      />
+    );
+  };
 
-    const TOP_N = 10;
-    const topOpenings = openings.slice(0, TOP_N);
-    const remainingCount = openings.length - topOpenings.length;
-
-    // A radar chart needs at least 3 axes to read as a "wheel" — with fewer
-    // real openings, Recharts' polygon grid degenerates to a flat spoke or
-    // a line with no visible ring. Pad with neutral placeholder spokes so
-    // there's always a real shape, but keep them visually/semantically
-    // distinct (no label, excluded from the tooltip's "real" lookup).
+  const buildWheelData = (list: OpeningStat[], topN: number) => {
+    const top = list.slice(0, topN);
+    const remaining = list.length - top.length;
     const MIN_SPOKES = 3;
-    const paddingNeeded = Math.max(0, MIN_SPOKES - topOpenings.length);
-    const radarData = [
-      ...topOpenings.map((o) => ({
+    const paddingNeeded = Math.max(0, MIN_SPOKES - top.length);
+    const data = [
+      ...top.map((o) => ({
         move: o.move,
         winRate: openingWinRate(o),
         games: o.games,
@@ -1027,7 +1051,100 @@ const Stats = () => {
         key: `pad-${i}`,
       })),
     ];
-    const sparseData = topOpenings.length < MIN_SPOKES;
+    return { top, remaining, data, sparse: top.length < MIN_SPOKES };
+  };
+
+  const renderOpeningWheel = (
+    title: string,
+    list: OpeningStat[],
+    winRate: number,
+    gamesForColor: number,
+    accentColor: string
+  ) => {
+    const TOP_N = 8;
+    const { top, remaining, data, sparse } = buildWheelData(list, TOP_N);
+
+    return (
+      <div>
+        <h2 className="text-lg sm:text-2xl font-bold text-black mb-1 text-center">{title}</h2>
+        <p className="text-black/60 font-body text-xs sm:text-sm text-center mb-2">
+          {gamesForColor} games • {winRate}% win rate
+          {remaining > 0 ? ` • top ${TOP_N} of ${list.length} openings` : ''}
+        </p>
+        {sparse && (
+          <p className="text-amber-600 font-body text-xs text-center mb-2">
+            Only {top.length} opening{top.length === 1 ? '' : 's'} found here — play more games to fill out the wheel.
+          </p>
+        )}
+        <ResponsiveContainer key={`${title}-${data.length}`} width="100%" height={360} minWidth={260}>
+          <RadarChart data={data} outerRadius="72%" cx="50%" cy="50%">
+            <PolarGrid stroke="#E5E7EB" gridType="circle" />
+            <PolarAngleAxis
+              dataKey="move"
+              tick={{ fill: '#111827', fontSize: 13, fontWeight: 600 }}
+              tickFormatter={(value: string) => value || ''}
+            />
+            <PolarRadiusAxis
+              angle={90}
+              domain={[0, 100]}
+              tick={{ fill: '#9CA3AF', fontSize: 10 }}
+              tickFormatter={(v) => `${v}%`}
+            />
+            <Radar
+              name="Win rate"
+              dataKey="winRate"
+              stroke={accentColor}
+              fill={accentColor}
+              fillOpacity={0.3}
+              strokeWidth={2.5}
+              animationDuration={1500}
+              shape={SmoothBlobShape}
+              dot={(dotProps: any) => {
+                const { cx, cy, payload, key } = dotProps;
+                if (payload?.isPlaceholder) return <g key={key} />;
+                return <circle key={key} cx={cx} cy={cy} r={4} fill={accentColor} />;
+              }}
+            />
+            <Tooltip
+              content={({ active, payload }: any) => {
+                if (!active || !payload || !payload.length) return null;
+                const point = payload[0]?.payload;
+                if (!point || point.isPlaceholder) return null;
+                const o = top.find((x) => x.move === point.move);
+                return (
+                  <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs">
+                    <div className="font-bold text-black mb-1">{point.move}</div>
+                    <div className="text-black/70">
+                      {point.winRate}% win rate
+                      {o ? ` (${o.wins}W ${o.losses}L ${o.draws}D over ${o.games} games)` : ''}
+                    </div>
+                  </div>
+                );
+              }}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  };
+
+  const renderChessComDashboard = () => {
+    if (!chessComSummary) return null;
+    const {
+      username,
+      totalGames,
+      monthsScanned,
+      gamesAsWhite,
+      gamesAsBlack,
+      openingsWhite,
+      openingsBlack,
+    } = chessComSummary;
+
+    const sumWins = (list: OpeningStat[]) => list.reduce((s, o) => s + o.wins, 0);
+    const winRateWhite = gamesAsWhite > 0 ? Math.round((sumWins(openingsWhite) / gamesAsWhite) * 100) : 0;
+    const winRateBlack = gamesAsBlack > 0 ? Math.round((sumWins(openingsBlack) / gamesAsBlack) * 100) : 0;
+
+    const allOpenings = [...openingsWhite, ...openingsBlack].sort((a, b) => b.games - a.games);
 
     return (
       <div className="w-full h-full overflow-y-auto">
@@ -1039,10 +1156,10 @@ const Stats = () => {
             className="text-center mb-5 sm:mb-10"
           >
             <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-3">
-              {username}'s Opening Wheel
+              {username}'s Opening Wheels
             </h1>
             <p className="text-black font-body text-sm sm:text-lg">
-              {totalGames} games across {monthsScanned} recent months • {openings.length} distinct openings • {overallWinRate}% overall win rate
+              {totalGames} games across {monthsScanned} recent months • {allOpenings.length} distinct openings
             </p>
           </motion.div>
 
@@ -1066,14 +1183,14 @@ const Stats = () => {
               initial={{ y: -300, opacity: 0, scale: 0.7 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, duration: 0.4, type: "spring", stiffness: 120 }}
-              className="bg-emerald-100 rounded-2xl p-3 sm:p-6 border border-emerald-200"
-              style={{ boxShadow: '0 8px 30px rgba(16, 185, 129, 0.2)' }}
+              className="bg-gray-100 rounded-2xl p-3 sm:p-6 border border-gray-300"
+              style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
             >
               <div className="flex justify-start mb-2 sm:mb-3">
-                <CheckCircle2 className="w-6 h-6 sm:w-10 sm:h-10 text-emerald-600" />
+                <CheckCircle2 className="w-6 h-6 sm:w-10 sm:h-10 text-black" />
               </div>
-              <div className="text-2xl sm:text-4xl font-bold text-black mb-1">{overallWinRate}%</div>
-              <div className="text-xs sm:text-sm text-black font-semibold uppercase tracking-wide">Overall Win Rate</div>
+              <div className="text-2xl sm:text-4xl font-bold text-black mb-1">{winRateWhite}%</div>
+              <div className="text-xs sm:text-sm text-black font-semibold uppercase tracking-wide">Win Rate as White</div>
             </motion.div>
 
             <motion.div
@@ -1086,81 +1203,32 @@ const Stats = () => {
               <div className="flex justify-start mb-2 sm:mb-3">
                 <BookOpen className="w-6 h-6 sm:w-10 sm:h-10 text-black" />
               </div>
-              <div className="text-2xl sm:text-4xl font-bold text-black mb-1">{openings.length}</div>
+              <div className="text-2xl sm:text-4xl font-bold text-black mb-1">{winRateBlack}%</div>
               <div className="text-xs sm:text-sm text-black font-semibold uppercase tracking-wide">
-                Openings Tracked
+                Win Rate as Black
               </div>
             </motion.div>
           </div>
 
-          {/* Radial / circular opening chart */}
+          {/* Two wheels: White & Black */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8 }}
-            className="bg-white rounded-2xl p-4 sm:p-8 border border-gray-200 mb-8 sm:mb-10"
-            style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-10"
           >
-            <h2 className="text-lg sm:text-2xl font-bold text-black mb-1 text-center">
-              Opening Win Rate Wheel
-            </h2>
-            <p className="text-black/60 font-body text-xs sm:text-sm text-center mb-2">
-              Your most-played first moves around the circumference — distance from center is win rate
-              {remainingCount > 0 ? ` (top ${TOP_N} by games played)` : ''}
-            </p>
-            {sparseData && (
-              <p className="text-amber-600 font-body text-xs text-center mb-2">
-                Only {topOpenings.length} opening{topOpenings.length === 1 ? '' : 's'} found in the scanned games —
-                play a few more for a fuller wheel. Empty spokes below are placeholders, not real data.
-              </p>
-            )}
-            <ResponsiveContainer key={radarData.length} width="100%" height={420} minWidth={280}>
-              <RadarChart data={radarData} outerRadius="75%" cx="50%" cy="50%">
-                <PolarGrid stroke="#E5E7EB" gridType="circle" />
-                <PolarAngleAxis
-                  dataKey="move"
-                  tick={{ fill: '#111827', fontSize: 13, fontWeight: 600 }}
-                  tickFormatter={(value: string) => value || ''}
-                />
-                <PolarRadiusAxis
-                  angle={90}
-                  domain={[0, 100]}
-                  tick={{ fill: '#9CA3AF', fontSize: 10 }}
-                  tickFormatter={(v) => `${v}%`}
-                />
-                <Radar
-                  name="Win rate"
-                  dataKey="winRate"
-                  stroke="#10B981"
-                  fill="#10B981"
-                  fillOpacity={0.35}
-                  strokeWidth={2.5}
-                  animationDuration={1500}
-                  dot={(dotProps: any) => {
-                    const { cx, cy, payload, key } = dotProps;
-                    if (payload?.isPlaceholder) return <g key={key} />;
-                    return <circle key={key} cx={cx} cy={cy} r={4} fill="#10B981" />;
-                  }}
-                />
-                <Tooltip
-                  content={({ active, payload }: any) => {
-                    if (!active || !payload || !payload.length) return null;
-                    const point = payload[0]?.payload;
-                    if (!point || point.isPlaceholder) return null;
-                    const o = topOpenings.find((x) => x.move === point.move);
-                    return (
-                      <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs">
-                        <div className="font-bold text-black mb-1">{point.move}</div>
-                        <div className="text-black/70">
-                          {point.winRate}% win rate
-                          {o ? ` (${o.wins}W ${o.losses}L ${o.draws}D over ${o.games} games)` : ''}
-                        </div>
-                      </div>
-                    );
-                  }}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+            <div
+              className="bg-white rounded-2xl p-4 sm:p-8 border border-gray-200"
+              style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+            >
+              {renderOpeningWheel('As White', openingsWhite, winRateWhite, gamesAsWhite, '#111827')}
+            </div>
+            <div
+              className="bg-white rounded-2xl p-4 sm:p-8 border border-gray-200"
+              style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+            >
+              {renderOpeningWheel('As Black', openingsBlack, winRateBlack, gamesAsBlack, '#A855F7')}
+            </div>
           </motion.div>
 
           {/* Full opening breakdown table */}
@@ -1174,22 +1242,32 @@ const Stats = () => {
               Every Opening You've Played
             </h2>
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
-              <div className="grid grid-cols-5 gap-2 px-4 sm:px-6 py-3 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-black/60">
+              <div className="grid grid-cols-6 gap-2 px-4 sm:px-6 py-3 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-black/60">
                 <div>Opening Move</div>
+                <div className="text-center">Color</div>
                 <div className="text-center">Games</div>
                 <div className="text-center">W / L / D</div>
                 <div className="text-center">Win Rate</div>
                 <div className="text-center">&nbsp;</div>
               </div>
-              {openings.map((o, i) => {
+              {allOpenings.map((o, i) => {
                 const wr = openingWinRate(o);
                 const color = OPENING_COLORS[i % OPENING_COLORS.length];
                 return (
                   <div
-                    key={o.move}
-                    className="grid grid-cols-5 gap-2 px-4 sm:px-6 py-3 border-t border-gray-100 items-center"
+                    key={`${o.color}-${o.move}`}
+                    className="grid grid-cols-6 gap-2 px-4 sm:px-6 py-3 border-t border-gray-100 items-center"
                   >
                     <div className="font-mono font-bold text-black">{o.move}</div>
+                    <div className="text-center">
+                      <span
+                        className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          o.color === 'white' ? 'bg-gray-200 text-black' : 'bg-purple-200 text-purple-900'
+                        }`}
+                      >
+                        {o.color === 'white' ? 'White' : 'Black'}
+                      </span>
+                    </div>
                     <div className="text-center text-black">{o.games}</div>
                     <div className="text-center text-black text-sm">
                       <span className="text-emerald-600 font-semibold">{o.wins}</span>
