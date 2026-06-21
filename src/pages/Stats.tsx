@@ -1064,6 +1064,7 @@ const Stats = () => {
 
   const renderOpeningWheel = (
     title: string,
+    subtitle: string,
     list: OpeningStat[],
     winRate: number,
     gamesForColor: number,
@@ -1075,6 +1076,7 @@ const Stats = () => {
     return (
       <div>
         <h2 className="text-lg sm:text-2xl font-bold text-black mb-1 text-center">{title}</h2>
+        <p className="text-black/40 font-body text-[11px] sm:text-xs text-center mb-1">{subtitle}</p>
         <p className="text-black/60 font-body text-xs sm:text-sm text-center mb-2">
           {gamesForColor} games • {winRate}% win rate
           {remaining > 0 ? ` • top ${TOP_N} of ${list.length} openings` : ''}
@@ -1164,10 +1166,10 @@ const Stats = () => {
             className="text-center mb-5 sm:mb-10"
           >
             <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-3">
-              {username}'s Opening Wheels
+              {username}'s Opponent Wheels
             </h1>
             <p className="text-black font-body text-sm sm:text-lg">
-              {totalGames} games across {monthsScanned} recent months • {allOpenings.length} distinct openings
+              {totalGames} games across {monthsScanned} recent months • {allOpenings.length} distinct opponent openings
             </p>
           </motion.div>
 
@@ -1229,13 +1231,27 @@ const Stats = () => {
               className="bg-white rounded-2xl p-4 sm:p-8 border border-gray-200"
               style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
             >
-              {renderOpeningWheel('As White', openingsWhite, winRateWhite, gamesAsWhite, '#111827')}
+              {renderOpeningWheel(
+                'As White',
+                "What your opponents replied with",
+                openingsWhite,
+                winRateWhite,
+                gamesAsWhite,
+                '#111827'
+              )}
             </div>
             <div
               className="bg-white rounded-2xl p-4 sm:p-8 border border-gray-200"
               style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
             >
-              {renderOpeningWheel('As Black', openingsBlack, winRateBlack, gamesAsBlack, '#A855F7')}
+              {renderOpeningWheel(
+                'As Black',
+                "What your opponents opened with",
+                openingsBlack,
+                winRateBlack,
+                gamesAsBlack,
+                '#A855F7'
+              )}
             </div>
           </motion.div>
 
@@ -1247,12 +1263,12 @@ const Stats = () => {
             className="mb-10"
           >
             <h2 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6 text-center">
-              Every Opening You've Played
+              Every Opponent Opening You've Faced
             </h2>
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
               <div className="grid grid-cols-6 gap-2 px-4 sm:px-6 py-3 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-black/60">
-                <div>Opening Move</div>
-                <div className="text-center">Color</div>
+                <div>Opponent's Move</div>
+                <div className="text-center">You Played</div>
                 <div className="text-center">Games</div>
                 <div className="text-center">W / L / D</div>
                 <div className="text-center">Win Rate</div>

@@ -4,8 +4,10 @@
 // username is enough, same as visiting chess.com/member/<username>.
 
 export interface OpeningStat {
-  move: string; // the player's first move, e.g. "e4" or, as Black, "d5"
-  color: 'white' | 'black';
+  move: string; // the OPPONENT's opening move against this user — e.g. when
+                // the user played White, this is Black's first reply; when
+                // the user played Black, this is White's first move.
+  color: 'white' | 'black'; // the color the user (not the opponent) played
   games: number;
   wins: number;
   losses: number;
@@ -47,10 +49,13 @@ function normalizeMove(move: string): string {
   return move.replace(/[+#!?]+$/g, '');
 }
 
-// Pull the player's first move out of a PGN string.
-// isWhite=true -> the very first move of the game.
-// isWhite=false -> Black's reply (the second SAN token).
-function extractOpeningMove(pgn: string, isWhite: boolean): string | null {
+// Pull the OPPONENT's opening move out of a PGN string, relative to the
+// user's color in that game.
+// isWhite=true  (user played White)  -> opponent is Black -> their reply is
+//                                        the 2nd SAN token.
+// isWhite=false (user played Black)  -> opponent is White -> their move is
+//                                        the 1st SAN token.
+function extractOpponentOpeningMove(pgn: string, isWhite: boolean): string | null {
   if (!pgn) return null;
 
   // PGN headers are lines of the exact form `[Tag "Value"]`. We can't just
@@ -78,7 +83,8 @@ function extractOpeningMove(pgn: string, isWhite: boolean): string | null {
     sanMoves.push(token);
   }
 
-  const move = isWhite ? sanMoves[0] : sanMoves[1];
+  // Opponent's move is at the opposite index from the user's own move.
+  const move = isWhite ? sanMoves[1] : sanMoves[0];
   return move ? normalizeMove(move) : null;
 }
 
@@ -158,7 +164,7 @@ export async function fetchChessComOpeningStats(rawUsername: string): Promise<Ch
       const isBlack = black.username.toLowerCase() === uname;
       if (!isWhite && !isBlack) continue;
 
-      const move = extractOpeningMove(game.pgn, isWhite);
+      const move = extractOpponentOpeningMove(game.pgn, isWhite);
       if (!move) continue;
 
       const result = isWhite ? white.result : black.result;
