@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check for existing guest mode
     const guestMode = localStorage.getItem('royal-chess-guest-mode');
-    if (guestMode === 'true' && !user) {
+    if (guestMode === 'true') {
       setIsGuest(true);
     }
 
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
+
         // Clear guest mode when user signs in
         if (session?.user) {
           setIsGuest(false);
@@ -87,15 +87,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
+
       if (session?.user) {
         setIsGuest(false);
         localStorage.removeItem('royal-chess-guest-mode');
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [user]);
+    // When the tab regains focus after being backgrounded, force a fresh
+    // session check. Browsers throttle timers on hidden tabs, so the
+    // scheduled auto-refresh can lag; this makes sure we're always working
+    // with an up-to-date session as soon as the user comes back, rather
+    // than relying solely on the throttled timer to catch up.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          setSession(session);
+          setUser(session?.user ?? null);
+        });
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+    // Run once on mount only. Previously this depended on [user], which tore
+    // down and rebuilt the auth listener on every sign-in/sign-out — including
+    // right after a token refresh — adding unnecessary churn at the exact
+    // moment things were already fragile.
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -130,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const trackOpeningUsage = (gameIndex: number): boolean => {
     if (!isGuest) return true;
-    
+
     const newLimits = { ...guestLimits };
     newLimits.openingsUsed.add(gameIndex);
     setGuestLimits(newLimits);
@@ -140,11 +162,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const trackLineUpload = (): boolean => {
     if (!isGuest) return true;
-    
+
     if (guestLimits.linesUsed >= GUEST_LINES_LIMIT) {
       return false;
     }
-    
+
     const newLimits = {
       ...guestLimits,
       linesUsed: guestLimits.linesUsed + 1,
@@ -156,12 +178,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const canUseOpening = (gameIndex: number): boolean => {
     if (!isGuest) return true;
-    
+
     // If already used, allow
     if (guestLimits.openingsUsed.has(gameIndex)) {
       return true;
     }
-    
+
     // Check if under limit
     return guestLimits.openingsUsed.size < GUEST_OPENINGS_LIMIT;
   };
